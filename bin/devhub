@@ -1,0 +1,243 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+resolve_script_path() {
+  local source="${BASH_SOURCE[0]}"
+  while [ -L "$source" ]; do
+    local dir
+    dir="$(cd -P "$(dirname "$source")" && pwd)"
+    source="$(readlink "$source")"
+    [[ "$source" != /* ]] && source="$dir/$source"
+  done
+  cd -P "$(dirname "$source")" && pwd
+}
+
+SCRIPT_DIR="$(resolve_script_path)"
+DEVHUB_DIR_DEFAULT="$(cd "$SCRIPT_DIR/.." && pwd)"
+DEVHUB_DIR="${DEVHUB_DIR:-$DEVHUB_DIR_DEFAULT}"
+COMPOSE_FILE="$DEVHUB_DIR/compose.yml"
+ENV_FILE="$DEVHUB_DIR/.env"
+NETWORK_NAME="${DEVHUB_NETWORK:-dev-shared-net}"
+DEFAULT_PROFILES=(core storage)
+ALL_PROFILES="core,storage,async,debug"
+POSTGRES_CONTAINER="${POSTGRES_CONTAINER:-infra-postgres}"
+
+require_cmd() {
+  command -v "$1" >/dev/null 2>&1 || {
+    echo "Missing required command: $1" >&2
+    exit 1
+  }
+}
+
+ensure_files() {
+  [ -f "$COMPOSE_FILE" ] || { echo "Compose file not found: $COMPOSE_FILE" >&2; exit 1; }
+  if [ ! -f "$ENV_FILE" ] && [ -f "$DEVHUB_DIR/.env.example" ]; then
+    cp "$DEVHUB_DIR/.env.example" "$ENV_FILE"
+    echo "Created $ENV_FILE from .env.example"
+  fi
+  [ -f "$ENV_FILE" ] || { echo "Env file not found: $ENV_FILE" >&2; exit 1; }
+}
+
+dc() {
+  docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"
+}
+
+ensure_network() {
+  if ! docker network inspect "$NETWORK_NAME" >/dev/null 2>&1; then
+    docker network create "$NETWORK_NAME" >/dev/null
+    echo "Network created: $NETWORK_NAME"
+  fi
+}
+
+join_profiles() {
+  local IFS=,
+  echo "$*"
+}
+
+open_url() {
+  local url="$1"
+  if command -v xdg-open >/dev/null 2>&1; then
+    xdg-open "$url" >/dev/null 2>&1 &
+  elif command -v open >/dev/null 2>&1; then
+    open "$url" >/dev/null 2>&1 &
+  fi
+  echo "$url"
+}
+
+print_ports() {
+  if command -v ss >/dev/null 2>&1; then
+    ss -ltn | awk 'NR==1 || /:5432 |:6379 |:7700 |:1025 |:8025 |:8080 |:8081 |:9000 |:9001 |:8888 |:5672 |:15672 /'
+    return
+  fi
+
+  if command -v lsof >/dev/null 2>&1; then
+    echo "COMMAND PID USER FD TYPE DEVICE SIZE/OFF NODE NAME"
+    lsof -nP -iTCP -sTCP:LISTEN | awk 'NR==1 || /:(5432|6379|7700|1025|8025|8080|8081|9000|9001|8888|5672|15672)$/'
+    return
+  fi
+
+  echo "Neither 'ss' nor 'lsof' found; skipping host port inspection."
+}
+
+cmd_up() {
+  local requested=()
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --with)
+        [ $# -ge 2 ] || { echo "--with requires a value" >&2; exit 1; }
+        IFS=',' read -r -a extra <<<"$2"
+        for p in "${extra[@]}"; do
+          requested+=("$p")
+        done
+        shift 2
+        ;;
+      *)
+        echo "Unknown option for up: $1" >&2
+        exit 1
+        ;;
+    esac
+  done
+
+  local profiles=("${DEFAULT_PROFILES[@]}")
+  for p in "${requested[@]}"; do
+    case "$p" in
+      async|debug|core|storage)
+        if [[ ! " ${profiles[*]} " =~ " ${p} " ]]; then
+          profiles+=("$p")
+        fi
+        ;;
+      '') ;;
+      *)
+        echo "Unknown profile: $p (allowed: core,storage,async,debug)" >&2
+        exit 1
+        ;;
+    esac
+  done
+
+  ensure_network
+  local profile_csv
+  profile_csv="$(join_profiles "${profiles[@]}")"
+  COMPOSE_PROFILES="$profile_csv" dc up -d
+  echo "Running profiles: $profile_csv"
+}
+
+cmd_down() {
+  COMPOSE_PROFILES="$ALL_PROFILES" dc down
+}
+
+cmd_restart() {
+  cmd_down
+  cmd_up
+}
+
+cmd_ps() {
+  COMPOSE_PROFILES="$ALL_PROFILES" dc ps
+}
+
+cmd_logs() {
+  if [ $# -gt 0 ]; then
+    COMPOSE_PROFILES="$ALL_PROFILES" dc logs -f "$1"
+  else
+    COMPOSE_PROFILES="$ALL_PROFILES" dc logs -f
+  fi
+}
+
+cmd_open() {
+  local target="${1:-}"
+  case "$target" in
+    mailpit) open_url "http://localhost:8025" ;;
+    adminer) open_url "http://localhost:8080" ;;
+    dozzle) open_url "http://localhost:8888" ;;
+    minio) open_url "http://localhost:9001" ;;
+    rabbitmq) open_url "http://localhost:15672" ;;
+    redis) open_url "http://localhost:8081" ;;
+    meili|meilisearch) open_url "http://localhost:7700" ;;
+    *)
+      echo "Usage: devhub open [mailpit|adminer|dozzle|minio|rabbitmq|redis|meili]" >&2
+      exit 1
+      ;;
+  esac
+}
+
+cmd_db() {
+  local sub="${1:-}"
+  shift || true
+  case "$sub" in
+    create)
+      ensure_network
+      COMPOSE_PROFILES="core" dc up -d postgres >/dev/null
+      "$DEVHUB_DIR/scripts/create-project-db.sh" "$@"
+      ;;
+    list)
+      local pg_user
+      pg_user=$(awk -F= '$1=="POSTGRES_USER"{print $2}' "$ENV_FILE" | tail -n1)
+      pg_user="${pg_user:-test}"
+      docker exec "$POSTGRES_CONTAINER" psql -U "$pg_user" -d postgres -Atc "SELECT datname FROM pg_database WHERE datistemplate=false ORDER BY datname;"
+      ;;
+    *)
+      echo "Usage: devhub db [create <db_name> [db_user] [db_password]|list]" >&2
+      exit 1
+      ;;
+  esac
+}
+
+cmd_doctor() {
+  ensure_network
+  echo "DevHub directory: $DEVHUB_DIR"
+  echo "Compose file: $COMPOSE_FILE"
+  echo "Network: $NETWORK_NAME"
+  echo ""
+  echo "Docker network status:"
+  docker network inspect "$NETWORK_NAME" --format '{{.Name}} (driver={{.Driver}})'
+  echo ""
+  echo "Container health summary:"
+  "$DEVHUB_DIR/scripts/healthcheck.sh"
+  echo ""
+  echo "Host ports:"
+  print_ports
+}
+
+cmd_help() {
+  cat <<'EOF'
+Usage: devhub <command> [options]
+
+Commands:
+  up [--with async] [--with debug]    Start shared services (default: core+storage)
+  down                                Stop/remove shared services
+  restart                             Restart shared services (core+storage)
+  ps                                  Show service status
+  logs [service]                      Follow logs
+  open <target>                       Open service URL
+  db create <db> [user] [password]    Create project database/user
+  db list                             List non-template databases
+  doctor                              Show health and networking diagnostics
+  help                                Show this help
+EOF
+}
+
+main() {
+  require_cmd docker
+  ensure_files
+
+  local cmd="${1:-help}"
+  shift || true
+
+  case "$cmd" in
+    up) cmd_up "$@" ;;
+    down) cmd_down ;;
+    restart) cmd_restart ;;
+    ps) cmd_ps ;;
+    logs) cmd_logs "$@" ;;
+    open) cmd_open "$@" ;;
+    db) cmd_db "$@" ;;
+    doctor) cmd_doctor ;;
+    help|-h|--help) cmd_help ;;
+    *)
+      echo "Unknown command: $cmd" >&2
+      cmd_help
+      exit 1
+      ;;
+  esac
+}
+
+main "$@"

@@ -1,0 +1,183 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: infra-postgres
+    profiles: [core]
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-devhub}
+      POSTGRES_USER: ${POSTGRES_USER:-test}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-test}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - infra_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - dev-shared-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: infra-redis
+    profiles: [core]
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - infra_redis_data:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    networks:
+      - dev-shared-net
+
+  meilisearch:
+    image: ${MEILI_IMAGE:-getmeili/meilisearch:v1.5}
+    container_name: infra-meilisearch
+    profiles: [core]
+    restart: unless-stopped
+    environment:
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-masterKey}
+      MEILI_ENV: development
+      MEILI_LOG_LEVEL: INFO
+    volumes:
+      - infra_meili_data:/meili_data
+    ports:
+      - "${MEILI_PORT:-7700}:7700"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:7700/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+    networks:
+      - dev-shared-net
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: infra-mailpit
+    profiles: [core]
+    restart: unless-stopped
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    volumes:
+      - infra_mailpit_data:/data
+    ports:
+      - "${MAILPIT_SMTP_PORT:-1025}:1025"
+      - "${MAILPIT_UI_PORT:-8025}:8025"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8025"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+    networks:
+      - dev-shared-net
+
+  adminer:
+    image: adminer:latest
+    container_name: infra-adminer
+    profiles: [core]
+    restart: unless-stopped
+    environment:
+      ADMINER_DEFAULT_SERVER: infra-postgres
+      ADMINER_DESIGN: pepa-linha
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${ADMINER_PORT:-8080}:8080"
+    networks:
+      - dev-shared-net
+
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: infra-dozzle
+    profiles: [core]
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "${DOZZLE_PORT:-8888}:8080"
+    networks:
+      - dev-shared-net
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    profiles: [storage]
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      MINIO_BROWSER_REDIRECT_URL: ${MINIO_BROWSER_REDIRECT_URL:-http://localhost:9001}
+    command: server /data --console-address ":9001"
+    volumes:
+      - infra_minio_data:/data
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:9000/minio/health/live"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+    networks:
+      - dev-shared-net
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: infra-rabbitmq
+    profiles: [async]
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-guest}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_DEFAULT_VHOST:-/}
+    volumes:
+      - infra_rabbitmq_data:/var/lib/rabbitmq
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_UI_PORT:-15672}:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+    networks:
+      - dev-shared-net
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: infra-redis-commander
+    profiles: [debug]
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: local:infra-redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "${REDIS_COMMANDER_PORT:-8081}:8081"
+    networks:
+      - dev-shared-net
+
+volumes:
+  infra_postgres_data:
+  infra_redis_data:
+  infra_meili_data:
+  infra_mailpit_data:
+  infra_minio_data:
+  infra_rabbitmq_data:
+
+networks:
+  dev-shared-net:
+    name: dev-shared-net
+    external: true
