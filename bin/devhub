@@ -66,13 +66,13 @@ open_url() {
 
 print_ports() {
   if command -v ss >/dev/null 2>&1; then
-    ss -ltn | awk 'NR==1 || /:5432 |:6379 |:7700 |:1025 |:8025 |:8080 |:8081 |:9000 |:9001 |:8888 |:5672 |:15672 /'
+    ss -ltn | awk 'NR==1 || /:5432 |:6379 |:7700 |:1025 |:8025 |:9080 |:8081 |:9000 |:9001 |:8888 |:5672 |:15672 /'
     return
   fi
 
   if command -v lsof >/dev/null 2>&1; then
     echo "COMMAND PID USER FD TYPE DEVICE SIZE/OFF NODE NAME"
-    lsof -nP -iTCP -sTCP:LISTEN | awk 'NR==1 || /:(5432|6379|7700|1025|8025|8080|8081|9000|9001|8888|5672|15672)$/'
+    lsof -nP -iTCP -sTCP:LISTEN | awk 'NR==1 || /:(5432|6379|7700|1025|8025|9080|8081|9000|9001|8888|5672|15672)$/'
     return
   fi
 
@@ -146,7 +146,7 @@ cmd_open() {
   local target="${1:-}"
   case "$target" in
     mailpit) open_url "http://localhost:8025" ;;
-    adminer) open_url "http://localhost:8080" ;;
+    adminer) open_url "http://localhost:9080" ;;
     dozzle) open_url "http://localhost:8888" ;;
     minio) open_url "http://localhost:9001" ;;
     rabbitmq) open_url "http://localhost:15672" ;;

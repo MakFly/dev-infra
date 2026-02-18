@@ -67,7 +67,7 @@ devhub db list
 ## Useful URLs
 
 - Mailpit: <http://localhost:8025>
-- Adminer: <http://localhost:8080>
+- Adminer: <http://localhost:9080>
 - Dozzle: <http://localhost:8888>
 - MinIO console: <http://localhost:9001>
 - RabbitMQ UI: <http://localhost:15672>
