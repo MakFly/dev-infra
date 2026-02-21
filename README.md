@@ -12,7 +12,7 @@ A portable Docker Compose setup for shared local development services across mul
 | **Mailpit** | `infra-mailpit` | 1025, 8025 | http://localhost:8025 | Email testing (SMTP + UI) |
 | **Adminer** | `infra-adminer` | 9080 | http://localhost:9080 | Database management |
 | **Dozzle** | `infra-dozzle` | 8888 | http://localhost:8888 | Container logs viewer |
-| **MinIO** | `minio` | 9000, 9001 | http://localhost:9001 | S3-compatible storage |
+| **MinIO** | `minio` | 9000, 9001 | http://localhost:9001 | S3-compatible storage (deprecated since 2026-02-21) |
 | **RabbitMQ** | `infra-rabbitmq` | 5672, 15672 | http://localhost:15672 | Message broker |
 | **Redis Commander** | `infra-redis-commander` | 8081 | http://localhost:8081 | Redis GUI |
 
@@ -21,7 +21,7 @@ A portable Docker Compose setup for shared local development services across mul
 | Profile | Services | Default |
 |---------|----------|---------|
 | `core` | postgres, redis, meilisearch, mailpit, adminer, dozzle | Yes |
-| `storage` | minio | Yes |
+| `storage` | minio | Yes (deprecated) |
 | `async` | rabbitmq | No |
 | `debug` | redis-commander | No |
 
