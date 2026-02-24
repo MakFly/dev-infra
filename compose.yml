@@ -169,6 +169,68 @@ services:
     networks:
       - dev-shared-net
 
+  # FrankenPHP multi-versions (templates - utiliser overrides pour configurer)
+  frankenphp-81:
+    image: dunglas/franken-php:1.0-php8.1
+    container_name: infra-frankenphp-81
+    profiles: [php81]
+    restart: unless-stopped
+    ports:
+      - "${FRANKENPHP_81_PORT:-8001}:80"
+    environment:
+      - FRANKENPHP_CONFIG=worker /var/www/html/public/index.php
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - dev-shared-net
+
+  frankenphp-82:
+    image: dunglas/franken-php:1.0-php8.2
+    container_name: infra-frankenphp-82
+    profiles: [php82]
+    restart: unless-stopped
+    ports:
+      - "${FRANKENPHP_82_PORT:-8002}:80"
+    environment:
+      - FRANKENPHP_CONFIG=worker /var/www/html/public/index.php
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - dev-shared-net
+
+  # Node multi-versions (templates - utiliser overrides pour configurer)
+  node-20:
+    image: node:20-alpine
+    container_name: infra-node-20
+    profiles: [node]
+    restart: unless-stopped
+    ports:
+      - "${NODE_20_PORT:-3002}:3000"
+      - "${VITE_PORT:-5173}:5173"
+    environment:
+      - NODE_ENV=development
+    networks:
+      - dev-shared-net
+
+  node-22:
+    image: node:22-alpine
+    container_name: infra-node-22
+    profiles: [node22]
+    restart: unless-stopped
+    ports:
+      - "${NODE_22_PORT:-3003}:3000"
+      - "${VITE_PORT:-5173}:5173"
+    environment:
+      - NODE_ENV=development
+    networks:
+      - dev-shared-net
+
 volumes:
   infra_postgres_data:
   infra_redis_data:

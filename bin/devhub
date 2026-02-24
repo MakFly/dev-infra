@@ -19,7 +19,7 @@ COMPOSE_FILE="$DEVHUB_DIR/compose.yml"
 ENV_FILE="$DEVHUB_DIR/.env"
 NETWORK_NAME="${DEVHUB_NETWORK:-dev-shared-net}"
 DEFAULT_PROFILES=(core storage)
-ALL_PROFILES="core,storage,async,debug"
+ALL_PROFILES="core,storage,async,debug,php81,php82,node,node22"
 POSTGRES_CONTAINER="${POSTGRES_CONTAINER:-infra-postgres}"
 
 require_cmd() {
@@ -197,6 +197,57 @@ cmd_doctor() {
   print_ports
 }
 
+cmd_runtime() {
+  local project="${1:-}"
+  local override_file=""
+  
+  case "$project" in
+    trading)
+      override_file="$DEVHUB_DIR/overrides/trading-app.override.yml"
+      ;;
+    distribution|dist)
+      override_file="$DEVHUB_DIR/overrides/distribution-app.override.yml"
+      ;;
+    *)
+      echo "Usage: devhub runtime [trading|distribution]" >&2
+      echo "" >&2
+      echo "Projects:" >&2
+      echo "  trading      Start trading-app (PHP 8.1 + Node 20)" >&2
+      echo "  distribution Start distribution-app (PHP 8.2 + Node 22)" >&2
+      exit 1
+      ;;
+  esac
+  
+  [ -f "$override_file" ] || { echo "Override file not found: $override_file" >&2; exit 1; }
+  
+  ensure_network
+  COMPOSE_PROFILES="core" dc -f "$COMPOSE_FILE" -f "$override_file" up -d
+  echo "Started $project with profiles: core + php/node runtime"
+  echo ""
+  echo "Services:"
+  dc -f "$COMPOSE_FILE" -f "$override_file" ps
+}
+
+cmd_runtime_down() {
+  local project="${1:-}"
+  local override_file=""
+  
+  case "$project" in
+    trading)
+      override_file="$DEVHUB_DIR/overrides/trading-app.override.yml"
+      ;;
+    distribution|dist)
+      override_file="$DEVHUB_DIR/overrides/distribution-app.override.yml"
+      ;;
+    *)
+      echo "Usage: devhub down-runtime [trading|distribution]" >&2
+      exit 1
+      ;;
+  esac
+  
+  COMPOSE_PROFILES="core" dc -f "$COMPOSE_FILE" -f "$override_file" down
+}
+
 cmd_help() {
   cat <<'EOF'
 Usage: devhub <command> [options]
@@ -211,7 +262,13 @@ Commands:
   db create <db> [user] [password]    Create project database/user
   db list                             List non-template databases
   doctor                              Show health and networking diagnostics
+  runtime <project>                   Start project runtime (trading|distribution)
+  down-runtime <project>             Stop project runtime
   help                                Show this help
+
+Projects:
+  trading      PHP 8.1 + Node 20 (port 8001)
+  distribution PHP 8.2 + Node 22 (port 8002)
 EOF
 }
 
@@ -231,6 +288,8 @@ main() {
     open) cmd_open "$@" ;;
     db) cmd_db "$@" ;;
     doctor) cmd_doctor ;;
+    runtime) cmd_runtime "$@" ;;
+    down-runtime) cmd_runtime_down "$@" ;;
     help|-h|--help) cmd_help ;;
     *)
       echo "Unknown command: $cmd" >&2

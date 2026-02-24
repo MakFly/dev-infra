@@ -16,6 +16,15 @@ A portable Docker Compose setup for shared local development services across mul
 | **RabbitMQ** | `infra-rabbitmq` | 5672, 15672 | http://localhost:15672 | Message broker |
 | **Redis Commander** | `infra-redis-commander` | 8081 | http://localhost:8081 | Redis GUI |
 
+### Runtimes (per-project)
+
+| Service | Image | Profile | Port | Projects |
+|---------|-------|---------|------|----------|
+| **FrankenPHP 8.1** | `dunglas/franken-php:1.0-php8.1` | php81 | 8001 | trading-app |
+| **FrankenPHP 8.2** | `dunglas/franken-php:1.0-php8.2` | php82 | 8002 | distribution-app |
+| **Node 20** | `node:20-alpine` | node | 5173 | trading-app |
+| **Node 22** | `node:22-alpine` | node22 | 5173 | distribution-app |
+
 ## Profiles
 
 | Profile | Services | Default |
@@ -24,6 +33,10 @@ A portable Docker Compose setup for shared local development services across mul
 | `storage` | minio | Yes (deprecated) |
 | `async` | rabbitmq | No |
 | `debug` | redis-commander | No |
+| `php81` | frankenphp-81 | No |
+| `php82` | frankenphp-82 | No |
+| `node` | node-20 | No |
+| `node22` | node-22 | No |
 
 ## Installation
 
@@ -63,8 +76,24 @@ devhub up --with async,debug
 | `devhub open <target>` | Open service UI in browser |
 | `devhub db create <name>` | Create a project database |
 | `devhub db list` | List all databases |
+| `devhub runtime <project>` | Start project runtime (trading/distribution) |
+| `devhub down-runtime <project>` | Stop project runtime |
 | `devhub doctor` | Health & network diagnostics |
 | `devhub help` | Show help |
+
+### Project Runtimes
+
+```bash
+# Start trading-app (PHP 8.1 + Node 20)
+devhub runtime trading
+
+# Start distribution-app (PHP 8.2 + Node 22)
+devhub runtime distribution
+
+# Stop runtimes
+devhub down-runtime trading
+devhub down-runtime distribution
+```
 
 ### Database Management
 
