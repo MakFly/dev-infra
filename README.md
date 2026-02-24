@@ -75,6 +75,7 @@ devhub up --with async,debug
 | `devhub logs [service]` | Follow logs |
 | `devhub open <target>` | Open service UI in browser |
 | `devhub db create <name>` | Create a project database |
+| `devhub db import [trading\|distribution\|all]` | Import tilvest DB dumps from pro/tilvest/data/ |
 | `devhub db list` | List all databases |
 | `devhub runtime <project>` | Start project runtime (trading/distribution) |
 | `devhub down-runtime <project>` | Stop project runtime |
@@ -106,7 +107,88 @@ devhub db create myapp myuser mypassword
 
 # List all databases
 devhub db list
+
+# Import tilvest DB dumps (trading + distribution) from pro/tilvest/data/
+devhub db import [trading|distribution|all]
 ```
+
+### Scripts Layout
+
+| Path | Purpose |
+|------|---------|
+| `scripts/` | Generic infra (install, healthcheck, connect-project-network, create-project-db) |
+| `scripts/tilvest/` | Tilvest pro scripts (trading + distribution) |
+
+### How Overrides Work
+
+`devhub runtime <project>` runs:
+
+```bash
+docker compose -f compose.yml -f overrides/<project>-app.override.yml up -d
+```
+
+- **compose.yml** = base infra (postgres, mysql, redis, etc.) + optional template services (frankenphp-81, frankenphp-82, node-20, node-22)
+- **override.yml** = project-specific services that merge with compose (volumes, env, ports)
+
+Override services either:
+1. **Extend** a base service (same name) — override `volumes`, `environment`, `ports`, etc. (inherits `profiles` from compose.yml unless overridden)
+2. **Add** new services (new name) — e.g. `php-84` + `trading-node` for trading-app (no profile = always started)
+
+**Important**: New services in overrides should have no `profiles` so they start with `devhub runtime`. Extending a profiled service (e.g. frankenphp-82) keeps its profile — ensure `devhub up` or the runtime activates the needed profiles.
+
+All project containers must join `dev-shared-net` to reach infra services (infra-mysql, infra-redis, etc.).
+
+### Adding a New Project
+
+1. **Create override** `overrides/myproject-app.override.yml`:
+
+```yaml
+services:
+  myproject-php:
+    image: dunglas/frankenphp:latest  # or custom build
+    container_name: myproject-php
+    volumes:
+      - /path/to/your/project:/var/www/html
+    working_dir: /var/www/html
+    environment:
+      - DATABASE_URL=mysql://test:test@infra-mysql:3306/myproject
+      - REDIS_URL=redis://infra-redis:6379
+    ports:
+      - "8003:80"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - dev-shared-net
+
+  myproject-node:
+    image: node:22-alpine
+    container_name: myproject-node
+    volumes:
+      - /path/to/your/project:/app
+      - /path/to/your/project/node_modules:/app/node_modules
+    working_dir: /app
+    command: npm run dev -- --host --port 5176
+    environment:
+      - VITE_APP_URL=http://localhost:8003
+      - VITE_PORT=5176
+    ports:
+      - "5176:5176"
+    networks:
+      - dev-shared-net
+```
+
+2. **Register in devhub** — add case in `cmd_runtime` and `cmd_runtime_down`:
+
+```bash
+myproject)
+  override_file="$DEVHUB_DIR/overrides/myproject-app.override.yml"
+  ;;
+```
+
+3. **Optional**: add `scripts/myproject/` for import/export scripts if needed.
+
+4. **Prerequisites**: Run `devhub up` first (core = postgres, mysql, redis, etc.). Then `devhub runtime myproject`.
 
 ### Open Service UIs
 

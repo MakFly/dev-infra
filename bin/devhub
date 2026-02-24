@@ -168,6 +168,11 @@ cmd_db() {
       COMPOSE_PROFILES="core" dc up -d postgres >/dev/null
       "$DEVHUB_DIR/scripts/create-project-db.sh" "$@"
       ;;
+    import)
+      ensure_network
+      COMPOSE_PROFILES="core" dc up -d mysql >/dev/null
+      "$DEVHUB_DIR/scripts/tilvest/import-db.sh" "${1:-all}"
+      ;;
     list)
       local pg_user
       pg_user=$(awk -F= '$1=="POSTGRES_USER"{print $2}' "$ENV_FILE" | tail -n1)
@@ -175,7 +180,7 @@ cmd_db() {
       docker exec "$POSTGRES_CONTAINER" psql -U "$pg_user" -d postgres -Atc "SELECT datname FROM pg_database WHERE datistemplate=false ORDER BY datname;"
       ;;
     *)
-      echo "Usage: devhub db [create <db_name> [db_user] [db_password]|list]" >&2
+      echo "Usage: devhub db [create <db_name> [db_user] [db_password]|import [trading|distribution|all]|list]" >&2
       exit 1
       ;;
   esac
@@ -267,6 +272,7 @@ Commands:
   logs [service]                      Follow logs
   open <target>                       Open service URL
   db create <db> [user] [password]    Create project database/user
+  db import [trading|distribution|all] Import tilvest DB dumps from pro/tilvest/data/
   db list                             List non-template databases
   doctor                              Show health and networking diagnostics
   runtime <project>                   Start project runtime (trading|distribution)

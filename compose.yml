@@ -21,6 +21,28 @@ services:
     networks:
       - dev-shared-net
 
+  mysql:
+    image: mysql:8.0
+    container_name: infra-mysql
+    profiles: [core]
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-trading}
+      MYSQL_USER: ${MYSQL_USER:-test}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-test}
+    volumes:
+      - infra_mysql_data:/var/lib/mysql
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - dev-shared-net
+
   redis:
     image: redis:7-alpine
     container_name: infra-redis
@@ -238,6 +260,7 @@ volumes:
   infra_mailpit_data:
   infra_minio_data:
   infra_rabbitmq_data:
+  infra_mysql_data:
 
 networks:
   dev-shared-net:

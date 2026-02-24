@@ -1,3 +1,4 @@
 .env
 .DS_Store
 overrides/
+# scripts/tilvest/ is tracked (tilvest pro scripts)
