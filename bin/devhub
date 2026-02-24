@@ -221,8 +221,15 @@ cmd_runtime() {
   [ -f "$override_file" ] || { echo "Override file not found: $override_file" >&2; exit 1; }
   
   ensure_network
-  COMPOSE_PROFILES="core" dc -f "$COMPOSE_FILE" -f "$override_file" up -d
-  echo "Started $project with profiles: core + php/node runtime"
+  
+  # Check if core services are running
+  if ! docker ps --format '{{.Names}}' | grep -q '^infra-postgres$'; then
+    echo "Error: Core services not running. Run 'make up' first." >&2
+    exit 1
+  fi
+  
+  dc -f "$COMPOSE_FILE" -f "$override_file" up -d
+  echo "Started $project runtime"
   echo ""
   echo "Services:"
   dc -f "$COMPOSE_FILE" -f "$override_file" ps
@@ -245,7 +252,7 @@ cmd_runtime_down() {
       ;;
   esac
   
-  COMPOSE_PROFILES="core" dc -f "$COMPOSE_FILE" -f "$override_file" down
+  dc -f "$COMPOSE_FILE" -f "$override_file" down --remove-orphans
 }
 
 cmd_help() {

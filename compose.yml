@@ -171,7 +171,7 @@ services:
 
   # FrankenPHP multi-versions (templates - utiliser overrides pour configurer)
   frankenphp-81:
-    image: dunglas/franken-php:1.0-php8.1
+    image: dunglas/frankenphp:latest
     container_name: infra-frankenphp-81
     profiles: [php81]
     restart: unless-stopped
@@ -188,7 +188,7 @@ services:
       - dev-shared-net
 
   frankenphp-82:
-    image: dunglas/franken-php:1.0-php8.2
+    image: dunglas/frankenphp:latest
     container_name: infra-frankenphp-82
     profiles: [php82]
     restart: unless-stopped
