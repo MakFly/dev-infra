@@ -1,4 +1,32 @@
+# Environment
 .env
+.env.local
+.env.*.local
+
+# OS
 .DS_Store
+.DS_Store?
+._*
+Thumbs.db
+
+# IDE / Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs & temporary
+*.log
+*.tmp
+*.cache
+
+# Docker generated files
+docker/frankenphp-82-laravel/
+docker/php-84-laravel/
+
+# Local overrides
 overrides/
-# scripts/tilvest/ is tracked (tilvest pro scripts)
+
+# Scripts (private - never push)
+/scripts/

@@ -10,7 +10,6 @@ services=(
   infra-dozzle
   minio
   infra-rabbitmq
-  infra-redis-commander
 )
 
 printf "%-24s %-10s %-12s\n" "CONTAINER" "RUNNING" "HEALTH"
