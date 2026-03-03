@@ -21,9 +21,8 @@ Thumbs.db
 *.tmp
 *.cache
 
-# Docker generated files
-docker/frankenphp-82-laravel/
-docker/php-84-laravel/
+# Docker generated files (never push)
+/docker/
 
 # Local overrides
 overrides/
