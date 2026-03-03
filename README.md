@@ -17,13 +17,13 @@ A portable Docker Compose setup for shared local development services across mul
 
 ### Runtimes (per-project)
 
-| Service | Image | Profile | Port | Projects |
-|---------|-------|---------|------|----------|
-| **FrankenPHP 8.1** | `dunglas/franken-php:1.0-php8.1` | php81 | 8001 | - |
-| **FrankenPHP 8.2** | `dunglas/franken-php:1.0-php8.2` | php82 | 8002 | distribution-v1, distribution-v2 |
-| **Node 20** | `node:20-alpine` | node | 5173 | trading |
-| **Node 22** | `node:22-alpine` | node22 | 5173 | - |
-| **Bun 1** | `oven/bun:1-alpine` | - | 5175 | distribution-v2 |
+| Service | Image | Profile | Port |
+|---------|-------|---------|------|
+| **FrankenPHP 8.1** | `dunglas/franken-php:1.0-php8.1` | php81 | 8001 |
+| **FrankenPHP 8.2** | `dunglas/franken-php:1.0-php8.2` | php82 | 8002 |
+| **Node 20** | `node:20-alpine` | node | 5173 |
+| **Node 22** | `node:22-alpine` | node22 | 5173 |
+| **Bun 1** | `oven/bun:1-alpine` | - | 5175 |
 
 ## Profiles
 
@@ -59,8 +59,6 @@ devhub up
 
 # Add extra profiles
 devhub up --with async      # RabbitMQ
-devhub up --with debug      # Redis Commander
-devhub up --with async,debug
 ```
 
 ## CLI Reference
@@ -74,9 +72,9 @@ devhub up --with async,debug
 | `devhub logs [service]` | Follow logs |
 | `devhub open <target>` | Open service UI in browser |
 | `devhub db create <name>` | Create a project database |
-| `devhub db import [trading\|distribution\|all]` | Import tilvest DB dumps from pro/tilvest/data/ |
+| `devhub db import <file>` | Import SQL dump into database |
 | `devhub db list` | List all databases |
-| `devhub runtime <project>` | Start project runtime (trading/distribution) |
+| `devhub runtime <project>` | Start project runtime (auto-detected from overrides/) |
 | `devhub down-runtime <project>` | Stop project runtime |
 | `devhub doctor` | Health & network diagnostics |
 | `devhub help` | Show help |
@@ -84,29 +82,12 @@ devhub up --with async,debug
 ### Project Runtimes
 
 ```bash
-# Start trading-app (PHP 8.4 + Node 20)
-devhub runtime trading
-
-# Start distribution-app v1 (PHP 8.2 + Node 20) - Legacy monolith
-devhub runtime distribution-v1
-
-# Start distribution-app v2 (PHP 8.2 + Bun + Reverb WebSocket)
-devhub runtime distribution-v2
-devhub runtime distribution-v2 --with worker  # with queue worker
+# Start a project (auto-detected from overrides/*-app.override.yml)
+devhub runtime myproject
 
 # Stop runtimes
-devhub down-runtime trading
-devhub down-runtime distribution-v1
-devhub down-runtime distribution-v2
+devhub down-runtime myproject
 ```
-
-### Service Ports
-
-| Project | API | Web | WebSocket | Worker |
-|---------|-----|-----|-----------|--------|
-| trading | 8001 | 5174 | - | - |
-| distribution-v1 | 8001 | 5174 | - | - |
-| distribution-v2 | 8002 | 5175 | 8080 | profile: worker |
 
 ### Database Management
 
@@ -120,16 +101,9 @@ devhub db create myapp myuser mypassword
 # List all databases
 devhub db list
 
-# Import tilvest DB dumps (trading + distribution) from pro/tilvest/data/
-devhub db import [trading|distribution|all]
+# Import SQL dump
+devhub db import /path/to/dump.sql
 ```
-
-### Scripts Layout
-
-| Path | Purpose |
-|------|---------|
-| `scripts/` | Generic infra (install, healthcheck, connect-project-network, create-project-db) |
-| `scripts/tilvest/` | Tilvest pro scripts (trading + distribution) |
 
 ### How Overrides Work
 
@@ -210,7 +184,6 @@ devhub open adminer    # http://localhost:9080
 devhub open dozzle     # http://localhost:8888
 devhub open minio      # http://localhost:9001
 devhub open rabbitmq   # http://localhost:15672
-devhub open redis      # http://localhost:8081
 devhub open meili      # http://localhost:7700
 ```
 

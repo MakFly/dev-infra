@@ -131,6 +131,10 @@ services:
     networks:
       - dev-shared-net
 
+  # =====================================================================
+  # ARCHIVED - MinIO (deprecated since 2026-02-21)
+  # DO NOT USE - Will be removed in future version
+  # =====================================================================
   minio:
     image: minio/minio:latest
     container_name: minio
