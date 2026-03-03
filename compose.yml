@@ -176,20 +176,6 @@ services:
     networks:
       - dev-shared-net
 
-  redis-commander:
-    image: rediscommander/redis-commander:latest
-    container_name: infra-redis-commander
-    profiles: [debug]
-    restart: unless-stopped
-    environment:
-      REDIS_HOSTS: local:infra-redis:6379
-    depends_on:
-      redis:
-        condition: service_healthy
-    ports:
-      - "${REDIS_COMMANDER_PORT:-8081}:8081"
-    networks:
-      - dev-shared-net
 
   # FrankenPHP multi-versions (templates - utiliser overrides pour configurer)
   frankenphp-81:

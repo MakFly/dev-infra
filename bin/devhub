@@ -19,7 +19,7 @@ COMPOSE_FILE="$DEVHUB_DIR/compose.yml"
 ENV_FILE="$DEVHUB_DIR/.env"
 NETWORK_NAME="${DEVHUB_NETWORK:-dev-shared-net}"
 DEFAULT_PROFILES=(core storage)
-ALL_PROFILES="core,storage,async,debug,php81,php82,node,node22"
+ALL_PROFILES="core,storage,async,php81,php82,node,node22"
 POSTGRES_CONTAINER="${POSTGRES_CONTAINER:-infra-postgres}"
 
 require_cmd() {
@@ -66,13 +66,13 @@ open_url() {
 
 print_ports() {
   if command -v ss >/dev/null 2>&1; then
-    ss -ltn | awk 'NR==1 || /:5432 |:6379 |:7700 |:1025 |:8025 |:9080 |:8081 |:9000 |:9001 |:8888 |:5672 |:15672 /'
+    ss -ltn | awk 'NR==1 || /:5432 |:6379 |:7700 |:1025 |:8025 |:9080 |:9000 |:9001 |:8888 |:5672 |:15672 /'
     return
   fi
 
   if command -v lsof >/dev/null 2>&1; then
     echo "COMMAND PID USER FD TYPE DEVICE SIZE/OFF NODE NAME"
-    lsof -nP -iTCP -sTCP:LISTEN | awk 'NR==1 || /:(5432|6379|7700|1025|8025|9080|8081|9000|9001|8888|5672|15672)$/'
+    lsof -nP -iTCP -sTCP:LISTEN | awk 'NR==1 || /:(5432|6379|7700|1025|8025|9080|9000|9001|8888|5672|15672)$/'
     return
   fi
 
@@ -101,14 +101,14 @@ cmd_up() {
   local profiles=("${DEFAULT_PROFILES[@]}")
   for p in "${requested[@]}"; do
     case "$p" in
-      async|debug|core|storage)
+      async|core|storage)
         if [[ ! " ${profiles[*]} " =~ " ${p} " ]]; then
           profiles+=("$p")
         fi
         ;;
       '') ;;
       *)
-        echo "Unknown profile: $p (allowed: core,storage,async,debug)" >&2
+        echo "Unknown profile: $p (allowed: core,storage,async)" >&2
         exit 1
         ;;
     esac
@@ -150,10 +150,9 @@ cmd_open() {
     dozzle) open_url "http://localhost:8888" ;;
     minio) open_url "http://localhost:9001" ;;
     rabbitmq) open_url "http://localhost:15672" ;;
-    redis) open_url "http://localhost:8081" ;;
     meili|meilisearch) open_url "http://localhost:7700" ;;
     *)
-      echo "Usage: devhub open [mailpit|adminer|dozzle|minio|rabbitmq|redis|meili]" >&2
+      echo "Usage: devhub open [mailpit|adminer|dozzle|minio|rabbitmq|meili]" >&2
       exit 1
       ;;
   esac
@@ -202,62 +201,114 @@ cmd_doctor() {
   print_ports
 }
 
+resolve_override() {
+  local project="$1"
+  local override_file="$DEVHUB_DIR/overrides/${project}-app.override.yml"
+
+  if [ ! -f "$override_file" ]; then
+    echo "No override found: ${project}-app.override.yml" >&2
+    echo "" >&2
+    echo "Available projects:" >&2
+    for f in "$DEVHUB_DIR/overrides/"*-app.override.yml; do
+      [ -f "$f" ] || continue
+      local name
+      name=$(basename "$f" | sed 's/-app\.override\.yml$//')
+      echo "  $name" >&2
+    done
+    return 1
+  fi
+
+  echo "$override_file"
+}
+
+resolve_profiles() {
+  local override_file="$1"
+  local profiles
+  profiles=$(COMPOSE_PROFILES="$ALL_PROFILES" dc -f "$override_file" config --format json 2>/dev/null | python3 -c "
+import json, sys
+config = json.load(sys.stdin)
+override_file = '$override_file'
+
+# Extract service names from the override file
+svcs = set()
+in_services = False
+with open(override_file) as f:
+    for line in f:
+        s = line.rstrip()
+        if s == 'services:':
+            in_services = True
+            continue
+        if in_services and len(line) > 2 and line[0] == ' ' and line[1] == ' ' and line[2] != ' ' and ':' in s:
+            svcs.add(s.split(':')[0].strip())
+
+# Collect profiles from those services and their direct dependencies
+profiles = set()
+for svc_name in svcs:
+    svc = config.get('services', {}).get(svc_name, {})
+    profiles.update(svc.get('profiles', []))
+    for dep in svc.get('depends_on', {}):
+        dep_svc = config.get('services', {}).get(dep, {})
+        profiles.update(dep_svc.get('profiles', []))
+
+print(','.join(sorted(profiles)) if profiles else '')
+")
+  echo "${profiles:-}"
+}
+
 cmd_runtime() {
   local project="${1:-}"
-  local override_file=""
-  
-  case "$project" in
-    trading)
-      override_file="$DEVHUB_DIR/overrides/trading-app.override.yml"
-      ;;
-    distribution|dist)
-      override_file="$DEVHUB_DIR/overrides/distribution-app.override.yml"
-      ;;
-    *)
-      echo "Usage: devhub runtime [trading|distribution]" >&2
-      echo "" >&2
-      echo "Projects:" >&2
-      echo "  trading      Start trading-app (PHP 8.1 + Node 20)" >&2
-      echo "  distribution Start distribution-app (PHP 8.2 + Node 22)" >&2
-      exit 1
-      ;;
-  esac
-  
-  [ -f "$override_file" ] || { echo "Override file not found: $override_file" >&2; exit 1; }
-  
+  [ -n "$project" ] || { resolve_override ""; return 1; }
+
+  local override_file
+  override_file=$(resolve_override "$project") || exit 1
+
   ensure_network
-  
-  # Check if core services are running
-  if ! docker ps --format '{{.Names}}' | grep -q '^infra-postgres$'; then
-    echo "Error: Core services not running. Run 'make up' first." >&2
-    exit 1
-  fi
-  
-  dc -f "$COMPOSE_FILE" -f "$override_file" up -d
-  echo "Started $project runtime"
+
+  local profiles
+  profiles=$(resolve_profiles "$override_file")
+
+  COMPOSE_PROFILES="$profiles" dc -f "$override_file" up -d
+  echo "Started $project runtime (profiles: $profiles)"
   echo ""
-  echo "Services:"
-  dc -f "$COMPOSE_FILE" -f "$override_file" ps
+  COMPOSE_PROFILES="$profiles" dc -f "$override_file" ps
+}
+
+resolve_override_services() {
+  local override_file="$1"
+  python3 -c "
+import sys
+svcs = []
+in_services = False
+with open('$override_file') as f:
+    for line in f:
+        s = line.rstrip()
+        if s == 'services:':
+            in_services = True
+            continue
+        if in_services and len(line) > 2 and line[0] == ' ' and line[1] == ' ' and line[2] != ' ' and ':' in s:
+            svcs.append(s.split(':')[0].strip())
+print(' '.join(svcs))
+"
 }
 
 cmd_runtime_down() {
   local project="${1:-}"
-  local override_file=""
-  
-  case "$project" in
-    trading)
-      override_file="$DEVHUB_DIR/overrides/trading-app.override.yml"
-      ;;
-    distribution|dist)
-      override_file="$DEVHUB_DIR/overrides/distribution-app.override.yml"
-      ;;
-    *)
-      echo "Usage: devhub down-runtime [trading|distribution]" >&2
-      exit 1
-      ;;
-  esac
-  
-  dc -f "$COMPOSE_FILE" -f "$override_file" down --remove-orphans
+  [ -n "$project" ] || { echo "Usage: devhub down-runtime <project>" >&2; exit 1; }
+
+  local override_file
+  override_file=$(resolve_override "$project") || exit 1
+
+  local services
+  services=$(resolve_override_services "$override_file")
+
+  local profiles
+  profiles=$(resolve_profiles "$override_file")
+
+  # Only stop/rm project-specific services, not shared infra
+  # shellcheck disable=SC2086
+  COMPOSE_PROFILES="$profiles" dc -f "$override_file" stop $services
+  COMPOSE_PROFILES="$profiles" dc -f "$override_file" rm -f $services
+  echo "Stopped $project runtime ($services)"
 }
 
 cmd_help() {
@@ -265,7 +316,7 @@ cmd_help() {
 Usage: devhub <command> [options]
 
 Commands:
-  up [--with async] [--with debug]    Start shared services (default: core+storage)
+  up [--with async]                    Start shared services (default: core+storage)
   down                                Stop/remove shared services
   restart                             Restart shared services (core+storage)
   ps                                  Show service status
@@ -275,13 +326,14 @@ Commands:
   db import [trading|distribution|all] Import tilvest DB dumps from pro/tilvest/data/
   db list                             List non-template databases
   doctor                              Show health and networking diagnostics
-  runtime <project>                   Start project runtime (trading|distribution)
+  runtime <project>                   Start project runtime (auto-detected from overrides/)
   down-runtime <project>             Stop project runtime
   help                                Show this help
 
-Projects:
-  trading      PHP 8.1 + Node 20 (port 8001)
-  distribution PHP 8.2 + Node 22 (port 8002)
+Projects (convention: overrides/<name>.override.yml):
+  trading          PHP 8.4 + Node 20 (port 8001)
+  distribution-v1  PHP 8.2 + Node 20 (port 8001) - Legacy monolith
+  distribution-v2  PHP 8.2 + Bun (API: 8002, Web: 5175) - New monorepo
 EOF
 }
 

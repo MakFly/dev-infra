@@ -14,16 +14,16 @@ A portable Docker Compose setup for shared local development services across mul
 | **Dozzle** | `infra-dozzle` | 8888 | http://localhost:8888 | Container logs viewer |
 | **MinIO** | `minio` | 9000, 9001 | http://localhost:9001 | S3-compatible storage (deprecated since 2026-02-21) |
 | **RabbitMQ** | `infra-rabbitmq` | 5672, 15672 | http://localhost:15672 | Message broker |
-| **Redis Commander** | `infra-redis-commander` | 8081 | http://localhost:8081 | Redis GUI |
 
 ### Runtimes (per-project)
 
 | Service | Image | Profile | Port | Projects |
 |---------|-------|---------|------|----------|
-| **FrankenPHP 8.1** | `dunglas/franken-php:1.0-php8.1` | php81 | 8001 | trading-app |
-| **FrankenPHP 8.2** | `dunglas/franken-php:1.0-php8.2` | php82 | 8002 | distribution-app |
-| **Node 20** | `node:20-alpine` | node | 5173 | trading-app |
-| **Node 22** | `node:22-alpine` | node22 | 5173 | distribution-app |
+| **FrankenPHP 8.1** | `dunglas/franken-php:1.0-php8.1` | php81 | 8001 | - |
+| **FrankenPHP 8.2** | `dunglas/franken-php:1.0-php8.2` | php82 | 8002 | distribution-v1, distribution-v2 |
+| **Node 20** | `node:20-alpine` | node | 5173 | trading |
+| **Node 22** | `node:22-alpine` | node22 | 5173 | - |
+| **Bun 1** | `oven/bun:1-alpine` | - | 5175 | distribution-v2 |
 
 ## Profiles
 
@@ -32,7 +32,6 @@ A portable Docker Compose setup for shared local development services across mul
 | `core` | postgres, redis, meilisearch, mailpit, adminer, dozzle | Yes |
 | `storage` | minio | Yes (deprecated) |
 | `async` | rabbitmq | No |
-| `debug` | redis-commander | No |
 | `php81` | frankenphp-81 | No |
 | `php82` | frankenphp-82 | No |
 | `node` | node-20 | No |
@@ -85,16 +84,29 @@ devhub up --with async,debug
 ### Project Runtimes
 
 ```bash
-# Start trading-app (PHP 8.1 + Node 20)
+# Start trading-app (PHP 8.4 + Node 20)
 devhub runtime trading
 
-# Start distribution-app (PHP 8.2 + Node 22)
-devhub runtime distribution
+# Start distribution-app v1 (PHP 8.2 + Node 20) - Legacy monolith
+devhub runtime distribution-v1
+
+# Start distribution-app v2 (PHP 8.2 + Bun + Reverb WebSocket)
+devhub runtime distribution-v2
+devhub runtime distribution-v2 --with worker  # with queue worker
 
 # Stop runtimes
 devhub down-runtime trading
-devhub down-runtime distribution
+devhub down-runtime distribution-v1
+devhub down-runtime distribution-v2
 ```
+
+### Service Ports
+
+| Project | API | Web | WebSocket | Worker |
+|---------|-----|-----|-----------|--------|
+| trading | 8001 | 5174 | - | - |
+| distribution-v1 | 8001 | 5174 | - | - |
+| distribution-v2 | 8002 | 5175 | 8080 | profile: worker |
 
 ### Database Management
 
@@ -124,7 +136,7 @@ devhub db import [trading|distribution|all]
 `devhub runtime <project>` runs:
 
 ```bash
-docker compose -f compose.yml -f overrides/<project>-app.override.yml up -d
+docker compose -f compose.yml -f overrides/<project>.override.yml up -d
 ```
 
 - **compose.yml** = base infra (postgres, mysql, redis, etc.) + optional template services (frankenphp-81, frankenphp-82, node-20, node-22)
@@ -140,7 +152,7 @@ All project containers must join `dev-shared-net` to reach infra services (infra
 
 ### Adding a New Project
 
-1. **Create override** `overrides/myproject-app.override.yml`:
+1. **Create override** `overrides/myproject.override.yml`:
 
 ```yaml
 services:
