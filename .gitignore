@@ -21,11 +21,13 @@ Thumbs.db
 *.tmp
 *.cache
 
-# Docker generated files (never push)
-/docker/
+# Docker generated files (never push content)
+/docker/*
+!/docker/.gitkeep
 
-# Local overrides
-overrides/
+# Local overrides (never push content)
+/overrides/*
+!/overrides/.gitkeep
 
 # Scripts (private - never push)
 /scripts/
