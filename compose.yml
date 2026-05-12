@@ -216,6 +216,23 @@ services:
     networks:
       - dev-shared-net
 
+  frankenphp-85:
+    image: ${FRANKENPHP_85_IMAGE:-dunglas/frankenphp:1-php8.5}
+    container_name: infra-frankenphp-85
+    profiles: [php85]
+    restart: unless-stopped
+    ports:
+      - "${FRANKENPHP_85_PORT:-8005}:80"
+    environment:
+      - FRANKENPHP_CONFIG=worker /var/www/html/public/index.php
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - dev-shared-net
+
   # Node multi-versions (templates - utiliser overrides pour configurer)
   node-20:
     image: node:20-alpine
@@ -238,6 +255,19 @@ services:
     ports:
       - "${NODE_22_PORT:-3003}:3000"
       - "${VITE_PORT:-5173}:5173"
+    environment:
+      - NODE_ENV=development
+    networks:
+      - dev-shared-net
+
+  node-24:
+    image: ${NODE_24_IMAGE:-node:24-alpine}
+    container_name: infra-node-24
+    profiles: [node24]
+    restart: unless-stopped
+    ports:
+      - "${NODE_24_PORT:-3004}:3000"
+      - "${NODE_24_VITE_PORT:-5175}:5173"
     environment:
       - NODE_ENV=development
     networks:

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 DEVHUB_BIN="$REPO_DIR/bin/devhub"
 TARGET_BIN="$HOME/.local/bin/devhub"
 ZSH_SNIPPET_DIR="$HOME/.config/devhub"
