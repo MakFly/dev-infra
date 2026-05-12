@@ -19,8 +19,8 @@ COMPOSE_FILE="$DEVHUB_DIR/compose.yml"
 ENV_FILE="$DEVHUB_DIR/.env"
 SCRIPTS_DIR="$DEVHUB_DIR/data/scripts"
 NETWORK_NAME="${DEVHUB_NETWORK:-dev-shared-net}"
-DEFAULT_PROFILES=(core storage)
-ALL_PROFILES="core,storage,async,php81,php82,php85,node,node22,node24"
+DEFAULT_PROFILES=(core)
+ALL_PROFILES="core,async,node,node22"
 STARTABLE_PROFILES="$ALL_PROFILES"
 POSTGRES_CONTAINER="${POSTGRES_CONTAINER:-infra-postgres}"
 
@@ -73,13 +73,13 @@ open_url() {
 
 print_ports() {
   if command -v ss >/dev/null 2>&1; then
-    ss -ltn | awk 'NR==1 || /:5432 |:6379 |:7700 |:1025 |:8025 |:9080 |:9000 |:9001 |:8888 |:5672 |:15672 |:8001 |:8002 |:8005 |:3002 |:3003 |:3004 |:5173 |:5175 /'
+    ss -ltn | awk 'NR==1 || /:5432 |:6379 |:7700 |:1025 |:8025 |:9080 |:8888 |:5672 |:15672 |:3002 |:3003 |:5173 /'
     return
   fi
 
   if command -v lsof >/dev/null 2>&1; then
     echo "COMMAND PID USER FD TYPE DEVICE SIZE/OFF NODE NAME"
-    lsof -nP -iTCP -sTCP:LISTEN | awk 'NR==1 || /:(5432|6379|7700|1025|8025|9080|9000|9001|8888|5672|15672|8001|8002|8005|3002|3003|3004|5173|5175)$/'
+    lsof -nP -iTCP -sTCP:LISTEN | awk 'NR==1 || /:(5432|6379|7700|1025|8025|9080|8888|5672|15672|3002|3003|5173)$/'
     return
   fi
 
@@ -155,11 +155,10 @@ cmd_open() {
     mailpit) open_url "http://localhost:8025" ;;
     adminer) open_url "http://localhost:9080" ;;
     dozzle) open_url "http://localhost:8888" ;;
-    minio) open_url "http://localhost:9001" ;;
     rabbitmq) open_url "http://localhost:15672" ;;
     meili|meilisearch) open_url "http://localhost:7700" ;;
     *)
-      echo "Usage: devhub open [mailpit|adminer|dozzle|minio|rabbitmq|meili]" >&2
+      echo "Usage: devhub open [mailpit|adminer|dozzle|rabbitmq|meili]" >&2
       exit 1
       ;;
   esac
@@ -325,9 +324,9 @@ cmd_help() {
 Usage: devhub <command> [options]
 
 Commands:
-  up [--with profile[,profile]]        Start shared services (default: core+storage)
+  up [--with profile[,profile]]        Start shared services (default: core)
   down                                Stop/remove shared services
-  restart                             Restart shared services (core+storage)
+  restart                             Restart shared services (core)
   ps                                  Show service status
   logs [service]                      Follow logs
   open <target>                       Open service URL
@@ -340,7 +339,7 @@ Commands:
   help                                Show this help
 
 Profiles:
-  core, storage, async, php81, php82, php85, node, node22, node24
+  core, async, node, node22
 
 Projects:
   Add local override files as overrides/<name>-app.override.yml.

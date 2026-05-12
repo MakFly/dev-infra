@@ -1,20 +1,19 @@
-# DevHub - Local Docker Development Infrastructure for PHP, Node.js, Databases, Mail, Search, Queues, and Storage
+# DevHub - Local Docker Development Infrastructure for Databases, Redis, Mail, Search, Queues, Logs, and Node.js
 
 DevHub is a portable Docker Compose development environment for teams and solo
 developers who need shared local infrastructure across multiple projects. It
 starts common development services such as PostgreSQL, MySQL, Redis,
-Meilisearch, Mailpit, Adminer, Dozzle, RabbitMQ, MinIO, FrankenPHP, and Node.js
-behind one CLI: `devhub`.
+Meilisearch, Mailpit, Adminer, Dozzle, RabbitMQ, and Node.js behind one CLI:
+`devhub`.
 
-It is designed for local web application development, PHP development, Node.js
-development, Symfony/Laravel-style stacks, API projects, workers, queues,
-email testing, database administration, search engines, and S3-compatible local
-storage.
+It is designed for local web application development, API projects, workers,
+queues, email testing, database administration, search engines, cache/session
+testing, and Node.js tooling.
 
-Keywords: Docker Compose local development, PHP 8.5 Docker, Node.js 24 Docker,
-PostgreSQL dev environment, MySQL dev environment, Redis local cache,
-Meilisearch local search, Mailpit SMTP testing, RabbitMQ local queue,
-FrankenPHP development, shared Docker network, developer infrastructure.
+Keywords: Docker Compose local development, Node.js Docker, PostgreSQL dev
+environment, MySQL dev environment, Redis local cache, Meilisearch local search,
+Mailpit SMTP testing, RabbitMQ local queue, Adminer database UI, Dozzle Docker
+logs, shared Docker network, developer infrastructure.
 
 ## Contents
 
@@ -41,7 +40,7 @@ FrankenPHP development, shared Docker network, developer infrastructure.
 - Shared external Docker network: `dev-shared-net`.
 - CLI wrapper for startup, shutdown, logs, health checks, database creation,
   browser shortcuts, and project-specific runtimes.
-- Local PHP and Node.js runtime templates, including PHP 8.5 and Node.js 24.
+- Node.js runtime templates for common LTS versions.
 - Compose profiles so optional services do not need to run all the time.
 - Local-only override convention for project runtimes.
 
@@ -57,29 +56,19 @@ FrankenPHP development, shared Docker network, developer infrastructure.
 | Adminer | `infra-adminer` | `9080` | <http://localhost:9080> | Database administration |
 | Dozzle | `infra-dozzle` | `8888` | <http://localhost:8888> | Docker log viewer |
 | RabbitMQ | `infra-rabbitmq` | `5672`, `15672` | <http://localhost:15672> | Message broker and queues |
-| FrankenPHP 8.1 | `infra-frankenphp-81` | `8001` | <http://localhost:8001> | PHP runtime template |
-| FrankenPHP 8.2 | `infra-frankenphp-82` | `8002` | <http://localhost:8002> | PHP runtime template |
-| FrankenPHP 8.5 | `infra-frankenphp-85` | `8005` | <http://localhost:8005> | PHP runtime template |
 | Node.js 20 | `infra-node-20` | `3002`, `5173` | <http://localhost:3002> | Node runtime template |
 | Node.js 22 | `infra-node-22` | `3003`, `5173` | <http://localhost:3003> | Node runtime template |
-| Node.js 24 | `infra-node-24` | `3004`, `5175` | <http://localhost:3004> | Node runtime template |
-| MinIO | `minio` | `9000`, `9001` | <http://localhost:9001> | S3-compatible storage, archived |
 
 ## Profiles
 
 | Profile | Services | Default |
 |---------|----------|---------|
 | `core` | PostgreSQL, MySQL, Redis, Meilisearch, Mailpit, Adminer, Dozzle | Yes |
-| `storage` | MinIO | Yes, archived |
 | `async` | RabbitMQ | No |
-| `php81` | FrankenPHP 8.1 template | No |
-| `php82` | FrankenPHP 8.2 template | No |
-| `php85` | FrankenPHP 8.5 template | No |
 | `node` | Node.js 20 template | No |
 | `node22` | Node.js 22 template | No |
-| `node24` | Node.js 24 template | No |
 
-Default startup uses `core,storage`. Add optional profiles with
+Default startup uses `core`. Add optional profiles with
 `devhub up --with <profile>`.
 
 ## Requirements
@@ -111,14 +100,11 @@ If you do not want shell shortcuts, run the CLI directly:
 ## Quick Start
 
 ```bash
-# Start default shared services: core + storage
+# Start default shared services: core
 devhub up
 
 # Start RabbitMQ too
 devhub up --with async
-
-# Start local PHP 8.5 and Node.js 24 runtime templates
-devhub up --with php85,node24
 
 # Show status
 devhub ps
@@ -131,7 +117,7 @@ devhub doctor
 
 | Command | Description |
 |---------|-------------|
-| `devhub up [--with profile[,profile]]` | Start shared services, default `core,storage` |
+| `devhub up [--with profile[,profile]]` | Start shared services, default `core` |
 | `devhub down` | Stop and remove shared service containers |
 | `devhub restart` | Restart default shared services |
 | `devhub ps` | Show service status |
@@ -162,7 +148,6 @@ make down
 devhub open mailpit     # http://localhost:8025
 devhub open adminer     # http://localhost:9080
 devhub open dozzle      # http://localhost:8888
-devhub open minio       # http://localhost:9001
 devhub open rabbitmq    # http://localhost:15672
 devhub open meili       # http://localhost:7700
 ```
@@ -216,17 +201,18 @@ Example override:
 
 ```yaml
 services:
-  myproject-php:
-    image: dunglas/frankenphp:1-php8.5
-    container_name: myproject-php
+  myproject-worker:
+    image: node:24-alpine
+    container_name: myproject-worker
+    command: ["sh", "-lc", "npm install && npm run dev"]
     volumes:
-      - /path/to/project:/var/www/html
-    working_dir: /var/www/html
+      - /path/to/project:/workspace
+    working_dir: /workspace
     environment:
       - DATABASE_URL=postgres://test:test@infra-postgres:5432/myproject
       - REDIS_URL=redis://infra-redis:6379
     ports:
-      - "8010:80"
+      - "3010:3000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -277,11 +263,6 @@ MYSQL_ROOT_PASSWORD=root
 REDIS_PORT=6379
 MEILI_PORT=7700
 MAILPIT_UI_PORT=8025
-FRANKENPHP_85_IMAGE=dunglas/frankenphp:1-php8.5
-FRANKENPHP_85_PORT=8005
-NODE_24_IMAGE=node:24-alpine
-NODE_24_PORT=3004
-NODE_24_VITE_PORT=5175
 ```
 
 ## Troubleshooting
@@ -318,9 +299,7 @@ variable before starting services.
 - `.env` is ignored and should stay local.
 - Dozzle mounts the Docker socket for local log visibility.
 - Named Docker volumes contain local developer data; do not remove them unless
-  you intentionally want to delete local databases or storage.
-- MinIO is archived in this stack and should not be expanded unless a project
-  explicitly still needs it.
+  you intentionally want to delete local databases.
 
 ## License
 

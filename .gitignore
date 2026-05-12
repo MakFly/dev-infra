@@ -31,3 +31,6 @@ Thumbs.db
 
 # Scripts (private - never push)
 /scripts/
+
+# instant-grep index
+.ig/

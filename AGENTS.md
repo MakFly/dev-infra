@@ -6,7 +6,7 @@ Repository instructions for AI coding agents working on DevHub.
 
 DevHub is shared local development infrastructure built around Docker Compose.
 It provides PostgreSQL, MySQL, Redis, Meilisearch, Mailpit, Adminer, Dozzle,
-RabbitMQ, archived MinIO support, and optional project runtimes through
+RabbitMQ, Node.js runtime templates, and optional project runtimes through
 Compose override files.
 
 Primary entry points:
@@ -55,7 +55,7 @@ Use the smallest useful verification set:
 
 ```bash
 bash -n bin/devhub data/scripts/*.sh
-COMPOSE_PROFILES=core,storage,async,php81,php82,php85,node,node22,node24 docker compose --env-file .env.example -f compose.yml config
+COMPOSE_PROFILES=core,async,node,node22 docker compose --env-file .env.example -f compose.yml config
 ./bin/devhub help
 ```
 
@@ -78,8 +78,6 @@ the user explicitly asks for data removal.
 - Named volumes hold local developer data. Treat them as persistent user data.
 - Dozzle mounts `/var/run/docker.sock`; changes around that service should be
   reviewed with extra care.
-- MinIO is marked archived in `compose.yml`; do not expand its usage without an
-  explicit request.
 - `overrides/` and `docker/` are intended for local generated or private files;
   avoid committing project-specific content there unless requested.
 

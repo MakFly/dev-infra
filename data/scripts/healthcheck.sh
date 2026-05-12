@@ -8,7 +8,6 @@ services=(
   infra-mailpit
   infra-adminer
   infra-dozzle
-  minio
   infra-rabbitmq
 )
 

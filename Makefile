@@ -1,13 +1,12 @@
-.PHONY: help install uninstall up up-async up-local down restart ps logs doctor db-create db-list runtime-trading runtime-dist down-trading down-dist
+.PHONY: help install uninstall up up-async down restart ps logs doctor db-create db-list runtime-trading runtime-dist down-trading down-dist
 
 DEVHUB := ./bin/devhub
 
 help:
 	@echo "Targets:"
 	@echo "  make install              Install devhub globally (symlink + zsh aliases)"
-	@echo "  make up                   Start core+storage"
-	@echo "  make up-async            Start core+storage+async"
-	@echo "  make up-local             Start core+storage+php85+node24"
+	@echo "  make up                   Start core"
+	@echo "  make up-async            Start core+async"
 	@echo "  make down                 Stop all"
 	@echo "  make ps                   Show status"
 	@echo "  make doctor               Health/network/ports"
@@ -27,9 +26,6 @@ up:
 
 up-async:
 	@$(DEVHUB) up --with async
-
-up-local:
-	@$(DEVHUB) up --with php85,node24
 
 down:
 	@$(DEVHUB) down
