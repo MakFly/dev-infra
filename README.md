@@ -1,82 +1,62 @@
-# DevHub - Local Docker Development Infrastructure for Databases, Redis, Mail, Search, Queues, Logs, and Node.js
+# DevHub
 
-DevHub is a portable Docker Compose development environment for teams and solo
-developers who need shared local infrastructure across multiple projects. It
-starts common development services such as PostgreSQL, MySQL, Redis,
-Meilisearch, Mailpit, Adminer, Dozzle, RabbitMQ, and Node.js behind one CLI:
-`devhub`.
+**One command to run PostgreSQL, MySQL, Redis, Meilisearch, Mailpit, RabbitMQ, and more — shared across all your local projects.**
 
-It is designed for local web application development, API projects, workers,
-queues, email testing, database administration, search engines, cache/session
-testing, and Node.js tooling.
+DevHub is a Docker Compose development stack controlled by a single Bash CLI.
+Instead of defining database, cache, mail, search, and queue services in every
+project, you start them once with `devhub up` and connect any application through
+a shared Docker network.
 
-Keywords: Docker Compose local development, Node.js Docker, PostgreSQL dev
-environment, MySQL dev environment, Redis local cache, Meilisearch local search,
-Mailpit SMTP testing, RabbitMQ local queue, Adminer database UI, Dozzle Docker
-logs, shared Docker network, developer infrastructure.
+Built for teams and solo developers working on multiple web applications, APIs,
+or background workers that need common local infrastructure without per-project
+duplication.
 
-## Contents
+## Why DevHub
 
-- [Features](#features)
-- [Services](#services)
-- [Profiles](#profiles)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [CLI Reference](#cli-reference)
-- [Service URLs](#service-urls)
-- [Database Management](#database-management)
-- [Project Runtime Overrides](#project-runtime-overrides)
-- [Connect Another Project](#connect-another-project)
-- [Configuration](#configuration)
-- [Troubleshooting](#troubleshooting)
-- [Security Notes](#security-notes)
-
-## Features
-
-- One shared Docker Compose stack for multiple local projects.
-- Stable service names and ports for databases, cache, mail, search, queues,
-  logs, and admin tools.
-- Shared external Docker network: `dev-shared-net`.
-- CLI wrapper for startup, shutdown, logs, health checks, database creation,
-  browser shortcuts, and project-specific runtimes.
-- Node.js runtime templates for common LTS versions.
-- Compose profiles so optional services do not need to run all the time.
-- Local-only override convention for project runtimes.
+- **Start once, use everywhere** — one `devhub up` replaces duplicate
+  `docker-compose.yml` files across projects.
+- **Stable addresses** — every service has a fixed container name
+  (`infra-postgres`, `infra-redis`, …) and configurable host port.
+- **Profiles** — only run what you need. Core services start by default;
+  RabbitMQ and Node.js are opt-in.
+- **Project runtimes** — Compose override files let each project add its own
+  containers (workers, apps) that join the shared network.
+- **Built-in tooling** — database creation, health diagnostics, log tailing, and
+  browser shortcuts from the CLI.
 
 ## Services
 
-| Service | Container | Default Port(s) | UI URL | Purpose |
-|---------|-----------|-----------------|--------|---------|
-| PostgreSQL | `infra-postgres` | `5432` | - | Relational database |
-| MySQL | `infra-mysql` | `3306` | - | Relational database |
-| Redis | `infra-redis` | `6379` | - | Cache and sessions |
-| Meilisearch | `infra-meilisearch` | `7700` | <http://localhost:7700> | Local search engine |
-| Mailpit | `infra-mailpit` | `1025`, `8025` | <http://localhost:8025> | SMTP and email testing |
-| Adminer | `infra-adminer` | `9080` | <http://localhost:9080> | Database administration |
-| Dozzle | `infra-dozzle` | `8888` | <http://localhost:8888> | Docker log viewer |
-| RabbitMQ | `infra-rabbitmq` | `5672`, `15672` | <http://localhost:15672> | Message broker and queues |
-| Node.js 22 | `infra-node` | `3002`, `5173` | <http://localhost:3002> | Node LTS runtime template |
+| Service | Container | Port(s) | UI | Profile |
+|---|---|---|---|---|
+| PostgreSQL 16 | `infra-postgres` | `5432` | — | core |
+| MySQL 8 | `infra-mysql` | `3306` | — | core |
+| Redis 7 | `infra-redis` | `6379` | — | core |
+| Meilisearch | `infra-meilisearch` | `7700` | [localhost:7700](http://localhost:7700) | core |
+| Mailpit | `infra-mailpit` | `1025` / `8025` | [localhost:8025](http://localhost:8025) | core |
+| Adminer | `infra-adminer` | `9080` | [localhost:9080](http://localhost:9080) | core |
+| Dozzle | `infra-dozzle` | `8888` | [localhost:8888](http://localhost:8888) | core |
+| RabbitMQ 3 | `infra-rabbitmq` | `5672` / `15672` | [localhost:15672](http://localhost:15672) | async |
+| Node.js 22 LTS | `infra-node` | `3002` / `5173` | — | node |
 
 ## Profiles
 
 | Profile | Services | Default |
-|---------|----------|---------|
+|---|---|---|
 | `core` | PostgreSQL, MySQL, Redis, Meilisearch, Mailpit, Adminer, Dozzle | Yes |
 | `async` | RabbitMQ | No |
-| `node` | Node.js 22 LTS template | No |
+| `node` | Node.js 22 LTS | No |
 
-Default startup uses `core`. Add optional profiles with
-`devhub up --with <profile>`.
+```bash
+devhub up                  # core only
+devhub up --with async     # core + RabbitMQ
+```
 
 ## Requirements
 
-- Docker Engine 24 or newer
-- Docker Compose v2
+- Docker Engine 24+ with Compose v2
 - Bash
-- `jq` (used by `devhub runtime` / `devhub down-runtime`)
-- Optional: `make` for shortcuts
-- Optional: `xdg-open` on Linux or `open` on macOS for `devhub open`
+- `jq` (for `devhub runtime` / `devhub down-runtime`)
+- Optional: `make`, `xdg-open` (Linux) or `open` (macOS)
 
 ## Installation
 
@@ -87,10 +67,10 @@ cp .env.example .env
 make install
 ```
 
-`make install` creates a symlink at `~/.local/bin/devhub` and installs zsh
-shortcuts in `~/.config/devhub/devhub.zsh`.
+`make install` symlinks the CLI to `~/.local/bin/devhub` and adds zsh shortcuts
+(`dh`, `dhup`, `dhps`, `dhdown`) via `~/.config/devhub/devhub.zsh`.
 
-If you do not want shell shortcuts, run the CLI directly:
+To skip shell integration, run the CLI directly:
 
 ```bash
 ./bin/devhub help
@@ -99,110 +79,80 @@ If you do not want shell shortcuts, run the CLI directly:
 ## Quick Start
 
 ```bash
-# Start default shared services: core
-devhub up
-
-# Start RabbitMQ too
-devhub up --with async
-
-# Show status
-devhub ps
-
-# Inspect health, network, and ports
-devhub doctor
+devhub up               # start core services
+devhub ps               # show container status
+devhub doctor           # health, network, and port diagnostics
+devhub open adminer     # open Adminer in browser
+devhub db create myapp  # create a PostgreSQL database + role
 ```
 
 ## CLI Reference
 
 | Command | Description |
-|---------|-------------|
-| `devhub up [--with profile[,profile]]` | Start shared services, default `core` |
-| `devhub down` | Stop and remove shared service containers |
-| `devhub restart` | Restart default shared services |
+|---|---|
+| `devhub up [--with profile,...]` | Start shared services (default: `core`) |
+| `devhub down` | Stop and remove all shared containers |
+| `devhub restart [--with profile,...]` | Restart services |
 | `devhub ps` | Show service status |
-| `devhub logs [service]` | Follow logs for all services or one service |
-| `devhub open <target>` | Open a service UI in the browser |
-| `devhub db create <db> [user] [password]` | Create a PostgreSQL database and role |
-| `devhub db import [args]` | Run custom DB import script (`data/scripts/import-db.sh` or `DEVHUB_IMPORT_SCRIPT`) |
-| `devhub db list` | List non-template PostgreSQL databases |
-| `devhub runtime <project>` | Start a local project runtime override |
-| `devhub down-runtime <project>` | Stop a local project runtime override |
-| `devhub doctor` | Show health, network, and port diagnostics |
-| `devhub help` | Show CLI help |
+| `devhub logs [service]` | Follow logs |
+| `devhub open <target>` | Open a service UI (`mailpit`, `adminer`, `dozzle`, `rabbitmq`, `meili`) |
+| `devhub db create <db> [user] [pass]` | Create PostgreSQL database and role |
+| `devhub db import [args]` | Run custom import script (`data/scripts/import-db.sh` or `DEVHUB_IMPORT_SCRIPT`) |
+| `devhub db list` | List PostgreSQL databases |
+| `devhub runtime <project>` | Start a project runtime override |
+| `devhub down-runtime <project>` | Stop a project runtime |
+| `devhub doctor` | Diagnostics: health, network, ports |
+| `devhub help` | Show help |
 
-Make shortcuts:
+**Make shortcuts:**
 
 ```bash
-make up
-make up-async
-make ps
-make doctor
-make down
-make runtime PROJECT=myproject
+make up                          # start core
+make up-async                    # start core + async
+make down                        # stop all
+make ps                          # status
+make doctor                      # diagnostics
+make runtime PROJECT=myproject   # start project runtime
 make down-runtime PROJECT=myproject
-```
-
-## Service URLs
-
-```bash
-devhub open mailpit     # http://localhost:8025
-devhub open adminer     # http://localhost:9080
-devhub open dozzle      # http://localhost:8888
-devhub open rabbitmq    # http://localhost:15672
-devhub open meili       # http://localhost:7700
 ```
 
 ## Database Management
 
-Create a PostgreSQL database with a matching user and password:
-
 ```bash
-devhub db create myapp
+devhub db create myapp                    # db=myapp, user=myapp, pass=myapp
+devhub db create myapp myuser mypassword  # explicit credentials
+devhub db list                            # list all databases
 ```
 
-Create a database with explicit credentials:
-
-```bash
-devhub db create myapp myuser mypassword
-```
-
-List databases:
-
-```bash
-devhub db list
-```
-
-Default local connection examples:
+Default connection strings:
 
 ```text
-PostgreSQL: postgres://test:test@localhost:5432/devhub
-MySQL:      mysql://test:test@localhost:3306/trading
-Redis:      redis://localhost:6379
+PostgreSQL  postgres://test:test@localhost:5432/devhub
+MySQL       mysql://test:test@localhost:3306/trading
+Redis       redis://localhost:6379
 Meilisearch http://localhost:7700
-Mailpit SMTP localhost:1025
+Mailpit     smtp://localhost:1025
 ```
 
 ## Project Runtime Overrides
 
-Project-specific Docker Compose overrides live in:
+Add project-specific containers via Compose override files in `overrides/`:
 
 ```text
 overrides/<project>-app.override.yml
 ```
 
-Start and stop a project runtime:
-
 ```bash
-devhub runtime myproject
-devhub down-runtime myproject
+devhub runtime myproject       # start
+devhub down-runtime myproject  # stop
 ```
 
-Example override:
+Example override file:
 
 ```yaml
 services:
   myproject-worker:
-    image: node:24-alpine
+    image: node:22-alpine
     container_name: myproject-worker
     command: ["sh", "-lc", "npm install && npm run dev"]
     volumes:
@@ -222,40 +172,33 @@ services:
       - dev-shared-net
 ```
 
-Override files are local by convention. The repository keeps only placeholders
-inside `overrides/`.
+Override files are local by convention — the repository keeps only a `.gitkeep`
+placeholder in `overrides/`.
 
-## Connect Another Project
+## Connecting External Projects
 
-Attach a separate application Compose file to the shared DevHub network:
+Any Docker Compose project can reach DevHub services by joining the shared
+network:
 
 ```yaml
+# in your project's docker-compose.yml
 networks:
   dev-shared-net:
     external: true
 ```
 
-Then point application services at DevHub container names:
-
-```text
-infra-postgres
-infra-mysql
-infra-redis
-infra-meilisearch
-infra-mailpit
-infra-rabbitmq
-```
+Then reference services by container name: `infra-postgres`, `infra-mysql`,
+`infra-redis`, `infra-meilisearch`, `infra-mailpit`, `infra-rabbitmq`.
 
 ## Configuration
 
-Copy `.env.example` to `.env` and customize local ports, credentials, and image
-tags:
+Copy `.env.example` to `.env` and override any default:
 
 ```bash
 cp .env.example .env
 ```
 
-Common variables:
+All ports, credentials, and image tags are configurable. Common variables:
 
 ```dotenv
 POSTGRES_PORT=5432
@@ -263,43 +206,28 @@ MYSQL_ROOT_PASSWORD=root
 REDIS_PORT=6379
 MEILI_PORT=7700
 MAILPIT_UI_PORT=8025
+NODE_PORT=3002
+VITE_PORT=5173
 ```
 
 ## Troubleshooting
 
-Run diagnostics:
-
 ```bash
-devhub doctor
+devhub doctor          # full diagnostics
+devhub ps              # container status
+devhub logs postgres   # follow a single service
 ```
 
-Check running containers:
+- **Network missing** — `devhub up`, `devhub db create`, and `devhub doctor`
+  auto-create `dev-shared-net`.
+- **Port conflict** — edit `.env` and change the matching `*_PORT` variable.
 
-```bash
-devhub ps
-```
+## Security
 
-Follow logs:
-
-```bash
-devhub logs
-devhub logs postgres
-```
-
-If the shared network is missing, `devhub up`, `devhub db create`, and
-`devhub doctor` create `dev-shared-net` automatically.
-
-If a port is already in use, edit `.env` and change the matching `*_PORT`
-variable before starting services.
-
-## Security Notes
-
-- This stack is intended for local development, not production.
-- Default credentials in `.env.example` are development credentials.
-- `.env` is ignored and should stay local.
-- Dozzle mounts the Docker socket for local log visibility.
-- Named Docker volumes contain local developer data; do not remove them unless
-  you intentionally want to delete local databases.
+This stack is for **local development only**. Default credentials in
+`.env.example` are intentionally simple. `.env` is gitignored and stays local.
+Dozzle mounts the Docker socket for log access. Named volumes hold developer
+data — do not remove them unless you want to delete local databases.
 
 ## License
 
