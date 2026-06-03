@@ -60,6 +60,20 @@ devhub up --with async     # core + RabbitMQ
 
 ## Installation
 
+**One-liner** (installs to `~/.local/share/devhub`, no sudo):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/MakFly/dev-infra/main/install-remote.sh | bash
+```
+
+Custom install path:
+
+```bash
+DEVHUB_DIR=~/tools/devhub curl -fsSL https://raw.githubusercontent.com/MakFly/dev-infra/main/install-remote.sh | bash
+```
+
+**Manual** (if you prefer git clone):
+
 ```bash
 git clone git@github.com:MakFly/dev-infra.git dev-infra
 cd dev-infra
@@ -67,7 +81,7 @@ cp .env.example .env
 make install
 ```
 
-`make install` symlinks the CLI to `~/.local/bin/devhub` and adds zsh shortcuts
+Both methods symlink the CLI to `~/.local/bin/devhub` and add zsh shortcuts
 (`dh`, `dhup`, `dhps`, `dhdown`) via `~/.config/devhub/devhub.zsh`.
 
 To skip shell integration, run the CLI directly:
