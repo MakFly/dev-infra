@@ -56,8 +56,7 @@ logs, shared Docker network, developer infrastructure.
 | Adminer | `infra-adminer` | `9080` | <http://localhost:9080> | Database administration |
 | Dozzle | `infra-dozzle` | `8888` | <http://localhost:8888> | Docker log viewer |
 | RabbitMQ | `infra-rabbitmq` | `5672`, `15672` | <http://localhost:15672> | Message broker and queues |
-| Node.js 20 | `infra-node-20` | `3002`, `5173` | <http://localhost:3002> | Node runtime template |
-| Node.js 22 | `infra-node-22` | `3003`, `5173` | <http://localhost:3003> | Node runtime template |
+| Node.js 22 | `infra-node` | `3002`, `5173` | <http://localhost:3002> | Node LTS runtime template |
 
 ## Profiles
 
@@ -65,8 +64,7 @@ logs, shared Docker network, developer infrastructure.
 |---------|----------|---------|
 | `core` | PostgreSQL, MySQL, Redis, Meilisearch, Mailpit, Adminer, Dozzle | Yes |
 | `async` | RabbitMQ | No |
-| `node` | Node.js 20 template | No |
-| `node22` | Node.js 22 template | No |
+| `node` | Node.js 22 LTS template | No |
 
 Default startup uses `core`. Add optional profiles with
 `devhub up --with <profile>`.
@@ -76,6 +74,7 @@ Default startup uses `core`. Add optional profiles with
 - Docker Engine 24 or newer
 - Docker Compose v2
 - Bash
+- `jq` (used by `devhub runtime` / `devhub down-runtime`)
 - Optional: `make` for shortcuts
 - Optional: `xdg-open` on Linux or `open` on macOS for `devhub open`
 
@@ -124,7 +123,7 @@ devhub doctor
 | `devhub logs [service]` | Follow logs for all services or one service |
 | `devhub open <target>` | Open a service UI in the browser |
 | `devhub db create <db> [user] [password]` | Create a PostgreSQL database and role |
-| `devhub db import [trading\|distribution\|all]` | Import DB dumps when a local importer exists |
+| `devhub db import [args]` | Run custom DB import script (`data/scripts/import-db.sh` or `DEVHUB_IMPORT_SCRIPT`) |
 | `devhub db list` | List non-template PostgreSQL databases |
 | `devhub runtime <project>` | Start a local project runtime override |
 | `devhub down-runtime <project>` | Stop a local project runtime override |
@@ -136,10 +135,11 @@ Make shortcuts:
 ```bash
 make up
 make up-async
-make up-local
 make ps
 make doctor
 make down
+make runtime PROJECT=myproject
+make down-runtime PROJECT=myproject
 ```
 
 ## Service URLs

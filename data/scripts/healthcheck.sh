@@ -3,12 +3,14 @@ set -euo pipefail
 
 services=(
   infra-postgres
+  infra-mysql
   infra-redis
   infra-meilisearch
   infra-mailpit
   infra-adminer
   infra-dozzle
   infra-rabbitmq
+  infra-node
 )
 
 printf "%-24s %-10s %-12s\n" "CONTAINER" "RUNNING" "HEALTH"

@@ -153,29 +153,14 @@ services:
     networks:
       - dev-shared-net
 
-  # Node multi-versions (templates - utiliser overrides pour configurer)
-  node-20:
-    image: node:20-alpine
-    container_name: infra-node-20
+  node:
+    image: node:22-alpine
+    container_name: infra-node
     profiles: [node]
     restart: unless-stopped
     command: ["sh", "-lc", "tail -f /dev/null"]
     ports:
-      - "${NODE_20_PORT:-3002}:3000"
-      - "${VITE_PORT:-5173}:5173"
-    environment:
-      - NODE_ENV=development
-    networks:
-      - dev-shared-net
-
-  node-22:
-    image: node:22-alpine
-    container_name: infra-node-22
-    profiles: [node22]
-    restart: unless-stopped
-    command: ["sh", "-lc", "tail -f /dev/null"]
-    ports:
-      - "${NODE_22_PORT:-3003}:3000"
+      - "${NODE_PORT:-3002}:3000"
       - "${VITE_PORT:-5173}:5173"
     environment:
       - NODE_ENV=development

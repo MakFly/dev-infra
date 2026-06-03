@@ -20,7 +20,7 @@ ENV_FILE="$DEVHUB_DIR/.env"
 SCRIPTS_DIR="$DEVHUB_DIR/data/scripts"
 NETWORK_NAME="${DEVHUB_NETWORK:-dev-shared-net}"
 DEFAULT_PROFILES=(core)
-ALL_PROFILES="core,async,node,node22"
+ALL_PROFILES="core,async,node"
 STARTABLE_PROFILES="$ALL_PROFILES"
 POSTGRES_CONTAINER="${POSTGRES_CONTAINER:-infra-postgres}"
 
@@ -134,7 +134,7 @@ cmd_down() {
 
 cmd_restart() {
   cmd_down
-  cmd_up
+  cmd_up "$@"
 }
 
 cmd_ps() {
@@ -174,8 +174,8 @@ cmd_db() {
       "$SCRIPTS_DIR/create-project-db.sh" "$@"
       ;;
     import)
-      local importer="$SCRIPTS_DIR/tilvest/import-db.sh"
-      [ -x "$importer" ] || { echo "DB importer not found or not executable: $importer" >&2; exit 1; }
+      local importer="${DEVHUB_IMPORT_SCRIPT:-$SCRIPTS_DIR/import-db.sh}"
+      [ -x "$importer" ] || { echo "DB importer not found or not executable: $importer" >&2; echo "Place a custom script at $SCRIPTS_DIR/import-db.sh or set DEVHUB_IMPORT_SCRIPT." >&2; exit 1; }
       ensure_network
       COMPOSE_PROFILES="core" dc up -d mysql >/dev/null
       "$importer" "${1:-all}"
@@ -231,35 +231,20 @@ resolve_override() {
 
 resolve_profiles() {
   local override_file="$1"
+  local svc_names
+  svc_names=$(resolve_override_services "$override_file")
+
+  local svc_filter
+  svc_filter=$(printf '%s' "$svc_names" | tr ' ' '\n' | jq -R . | jq -s 'map(select(length>0))')
+
   local profiles
-  profiles=$(COMPOSE_PROFILES="$ALL_PROFILES" dc -f "$override_file" config --format json 2>/dev/null | python3 -c "
-import json, sys
-config = json.load(sys.stdin)
-override_file = '$override_file'
-
-# Extract service names from the override file
-svcs = set()
-in_services = False
-with open(override_file) as f:
-    for line in f:
-        s = line.rstrip()
-        if s == 'services:':
-            in_services = True
-            continue
-        if in_services and len(line) > 2 and line[0] == ' ' and line[1] == ' ' and line[2] != ' ' and ':' in s:
-            svcs.add(s.split(':')[0].strip())
-
-# Collect profiles from those services and their direct dependencies
-profiles = set()
-for svc_name in svcs:
-    svc = config.get('services', {}).get(svc_name, {})
-    profiles.update(svc.get('profiles', []))
-    for dep in svc.get('depends_on', {}):
-        dep_svc = config.get('services', {}).get(dep, {})
-        profiles.update(dep_svc.get('profiles', []))
-
-print(','.join(sorted(profiles)) if profiles else '')
-")
+  profiles=$(COMPOSE_PROFILES="$ALL_PROFILES" dc -f "$override_file" config --format json 2>/dev/null \
+    | jq -r --argjson svcs "$svc_filter" '
+      .services as $all |
+      ($svcs | map(. as $s | $all[$s] // empty |
+        ((.profiles // []) + ([.depends_on // {} | keys[] | . as $d | $all[$d] // empty | .profiles // [] | .[]] ))
+      ) | flatten | unique | join(","))
+    ')
   echo "${profiles:-}"
 }
 
@@ -283,20 +268,7 @@ cmd_runtime() {
 
 resolve_override_services() {
   local override_file="$1"
-  python3 -c "
-import sys
-svcs = []
-in_services = False
-with open('$override_file') as f:
-    for line in f:
-        s = line.rstrip()
-        if s == 'services:':
-            in_services = True
-            continue
-        if in_services and len(line) > 2 and line[0] == ' ' and line[1] == ' ' and line[2] != ' ' and ':' in s:
-            svcs.append(s.split(':')[0].strip())
-print(' '.join(svcs))
-"
+  awk '/^services:/{found=1; next} found && /^  [^ ]/ && /:/{gsub(/:.*/, ""); gsub(/^  /, ""); printf "%s ", $0} /^[^ ]/ && !/^services:/{found=0}' "$override_file" | sed 's/ $//'
 }
 
 cmd_runtime_down() {
@@ -331,7 +303,7 @@ Commands:
   logs [service]                      Follow logs
   open <target>                       Open service URL
   db create <db> [user] [password]    Create project database/user
-  db import [trading|distribution|all] Import DB dumps when local importer exists
+  db import [args]                     Run custom DB import script (see DEVHUB_IMPORT_SCRIPT)
   db list                             List non-template databases
   doctor                              Show health and networking diagnostics
   runtime <project>                   Start project runtime (auto-detected from overrides/)
@@ -339,7 +311,7 @@ Commands:
   help                                Show this help
 
 Profiles:
-  core, async, node, node22
+  core, async, node
 
 Projects:
   Add local override files as overrides/<name>-app.override.yml.
@@ -364,12 +336,13 @@ main() {
   esac
 
   require_cmd docker
+  case "$cmd" in runtime|down-runtime) require_cmd jq ;; esac
   ensure_files
 
   case "$cmd" in
     up) cmd_up "$@" ;;
     down) cmd_down ;;
-    restart) cmd_restart ;;
+    restart) cmd_restart "$@" ;;
     ps) cmd_ps ;;
     logs) cmd_logs "$@" ;;
     open) cmd_open "$@" ;;
