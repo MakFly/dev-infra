@@ -62,7 +62,7 @@ services:
       - dev-shared-net
 
   meilisearch:
-    image: ${MEILI_IMAGE:-getmeili/meilisearch:v1.5}
+    image: ${MEILI_IMAGE:-getmeili/meilisearch:v1.48}
     container_name: infra-meilisearch
     profiles: [core]
     restart: unless-stopped
