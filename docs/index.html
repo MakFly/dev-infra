@@ -90,7 +90,7 @@
                   <div class="text-xs font-medium text-console-muted">active project</div>
                   <div class="mt-2 flex flex-wrap items-end justify-between gap-4">
                     <div>
-                      <div class="text-2xl font-semibold tracking-[-0.02em]">iautos-api</div>
+                      <div class="text-2xl font-semibold tracking-[-0.02em]">acme-api</div>
                       <div class="mt-1 text-sm text-console-muted">Symfony, FrankenPHP, PostgreSQL</div>
                     </div>
                     <div class="rounded-full bg-panel/10 px-3 py-1 text-sm font-medium">ready</div>
@@ -271,15 +271,15 @@ devhub db create myapp</code></pre>
 
         <div class="grid gap-4 lg:grid-cols-[1.25fr_0.75fr]" id="worktree-flow">
           <article class="rounded-lg border border-hairline bg-panel p-4 shadow-sm">
-            <h3 class="mb-3 text-lg font-semibold tracking-[-0.01em]">Projet Symfony existant, exemple iAutos API</h3>
-            <pre class="relative overflow-auto rounded-lg bg-code"><code class="block min-w-full whitespace-pre p-4 font-mono text-sm leading-6 text-code-text">devhub project init iautos-api \
+            <h3 class="mb-3 text-lg font-semibold tracking-[-0.01em]">Projet Symfony existant</h3>
+            <pre class="relative overflow-auto rounded-lg bg-code"><code class="block min-w-full whitespace-pre p-4 font-mono text-sm leading-6 text-code-text">devhub project init acme-api \
   --stack symfony \
-  --repo /home/kev/Documents/lab/perso/marketplace/iautos/apps/api \
+  --repo ~/projects/acme/api \
   --base develop
 
-devhub wt add iautos-api feat/payment develop
-devhub runtime iautos-api
-devhub wt list iautos-api</code></pre>
+devhub wt add acme-api feat/payment develop
+devhub runtime acme-api
+devhub wt list acme-api</code></pre>
           </article>
           <article class="rounded-lg border border-hairline bg-panel p-4 shadow-sm">
             <h3 class="mb-3 text-lg font-semibold tracking-[-0.01em]">Nouveau projet FastAPI DDD</h3>
@@ -407,6 +407,15 @@ devhub runtime edge-api</code></pre>
         <a class="font-medium text-blue" href="#top">Retour haut</a>
       </div>
     </footer>
+
+    <button
+      class="scroll-top-button fixed bottom-5 right-5 z-50 grid size-11 translate-y-3 place-items-center rounded-full border border-hairline bg-panel text-lg font-semibold text-graphite opacity-0 shadow-xl transition hover:bg-soft"
+      type="button"
+      aria-label="Retour en haut"
+      aria-hidden="true"
+    >
+      ↑
+    </button>
 
     <script src="./script.js"></script>
   </body>

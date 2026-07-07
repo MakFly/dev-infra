@@ -165,15 +165,15 @@ fastapi-ddd
 Register an existing Symfony API project:
 
 ```bash
-devhub project init iautos-api \
+devhub project init acme-api \
   --stack symfony \
-  --root ~/dev/iautos-api \
-  --repo /home/kev/Documents/lab/perso/marketplace/iautos/apps/api \
+  --root ~/projects/acme-api \
+  --repo ~/projects/acme/api \
   --base develop
 
-devhub wt add iautos-api feat/payment develop
-devhub runtime iautos-api
-devhub wt list iautos-api
+devhub wt add acme-api feat/payment develop
+devhub runtime acme-api
+devhub wt list acme-api
 ```
 
 Create a new FastAPI project with a minimal DDD scaffold:

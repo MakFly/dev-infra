@@ -1,5 +1,6 @@
 const navToggle = document.querySelector(".nav-toggle");
 const siteNav = document.querySelector(".site-nav");
+const scrollTopButton = document.querySelector(".scroll-top-button");
 
 if (navToggle && siteNav) {
   navToggle.addEventListener("click", () => {
@@ -15,6 +16,25 @@ if (navToggle && siteNav) {
       siteNav.classList.remove("flex");
       navToggle.setAttribute("aria-expanded", "false");
     }
+  });
+}
+
+if (scrollTopButton instanceof HTMLButtonElement) {
+  const updateScrollTopButton = () => {
+    const isVisible = window.scrollY > 520;
+    scrollTopButton.classList.toggle("opacity-0", !isVisible);
+    scrollTopButton.classList.toggle("opacity-100", isVisible);
+    scrollTopButton.classList.toggle("translate-y-3", !isVisible);
+    scrollTopButton.classList.toggle("translate-y-0", isVisible);
+    scrollTopButton.classList.toggle("pointer-events-none", !isVisible);
+    scrollTopButton.setAttribute("aria-hidden", String(!isVisible));
+  };
+
+  scrollTopButton.classList.add("pointer-events-none");
+  updateScrollTopButton();
+  window.addEventListener("scroll", updateScrollTopButton, { passive: true });
+  scrollTopButton.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
   });
 }
 
