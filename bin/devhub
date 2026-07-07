@@ -18,6 +18,10 @@ DEVHUB_DIR="${DEVHUB_DIR:-$DEVHUB_DIR_DEFAULT}"
 COMPOSE_FILE="$DEVHUB_DIR/compose.yml"
 ENV_FILE="$DEVHUB_DIR/.env"
 SCRIPTS_DIR="$DEVHUB_DIR/data/scripts"
+PROJECT_SCRIPT="$SCRIPTS_DIR/project-init.sh"
+WT_ADD_SCRIPT="$SCRIPTS_DIR/wt-add.sh"
+WT_LIST_SCRIPT="$SCRIPTS_DIR/wt-list.sh"
+WT_RM_SCRIPT="$SCRIPTS_DIR/wt-rm.sh"
 NETWORK_NAME="${DEVHUB_NETWORK:-dev-shared-net}"
 DEFAULT_PROFILES=(core)
 ALL_PROFILES="core,async,node"
@@ -291,6 +295,31 @@ cmd_runtime_down() {
   echo "Stopped $project runtime ($services)"
 }
 
+cmd_project() {
+  "$PROJECT_SCRIPT" "$@"
+}
+
+cmd_wt() {
+  local sub="${1:-}"
+  shift || true
+  case "$sub" in
+    add) "$WT_ADD_SCRIPT" "$@" ;;
+    list) "$WT_LIST_SCRIPT" "$@" ;;
+    rm|remove) "$WT_RM_SCRIPT" "$@" ;;
+    *)
+      cat >&2 <<'EOF'
+Usage: devhub wt <command> [args]
+
+Commands:
+  add <project> <branch> [base-ref]  Create/register a worktree
+  list <project>                     List registered worktrees
+  rm <project> <worktree-slug>        Remove a worktree
+EOF
+      exit 1
+      ;;
+  esac
+}
+
 cmd_help() {
   cat <<'EOF'
 Usage: devhub <command> [options]
@@ -305,6 +334,12 @@ Commands:
   db create <db> [user] [password]    Create project database/user
   db import [args]                     Run custom DB import script (see DEVHUB_IMPORT_SCRIPT)
   db list                             List non-template databases
+  project init <name> --stack <stack> Register a worktree-enabled project
+  project list                        List registered projects
+  project show <name>                 Show a project registry file
+  wt add <project> <branch> [base]    Create/register a project worktree
+  wt list <project>                   List project worktrees
+  wt rm <project> <slug>              Remove a project worktree
   doctor                              Show health and networking diagnostics
   runtime <project>                   Start project runtime (auto-detected from overrides/)
   down-runtime <project>             Stop project runtime
@@ -312,6 +347,9 @@ Commands:
 
 Profiles:
   core, async, node
+
+Stacks:
+  symfony, laravel, nextjs, tanstack-start, hono, fastapi-ddd
 
 Projects:
   Add local override files as overrides/<name>-app.override.yml.
@@ -327,7 +365,7 @@ main() {
       cmd_help
       exit 0
       ;;
-    up|down|restart|ps|logs|open|db|doctor|runtime|down-runtime) ;;
+    up|down|restart|ps|logs|open|db|doctor|runtime|down-runtime|project|wt) ;;
     *)
       echo "Unknown command: $cmd" >&2
       cmd_help
@@ -335,9 +373,19 @@ main() {
       ;;
   esac
 
-  require_cmd docker
-  case "$cmd" in runtime|down-runtime) require_cmd jq ;; esac
-  ensure_files
+  case "$cmd" in
+    project)
+      require_cmd git
+      ;;
+    wt)
+      require_cmd git
+      ;;
+    *)
+      require_cmd docker
+      case "$cmd" in runtime|down-runtime) require_cmd jq ;; esac
+      ensure_files
+      ;;
+  esac
 
   case "$cmd" in
     up) cmd_up "$@" ;;
@@ -350,6 +398,8 @@ main() {
     doctor) cmd_doctor ;;
     runtime) cmd_runtime "$@" ;;
     down-runtime) cmd_runtime_down "$@" ;;
+    project) cmd_project "$@" ;;
+    wt) cmd_wt "$@" ;;
   esac
 }
 

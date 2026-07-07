@@ -1,6 +1,12 @@
 # DevHub
 
-**One command to run PostgreSQL, MySQL, Redis, Meilisearch, Mailpit, RabbitMQ, and more — shared across all your local projects.**
+**Local Docker development infrastructure with shared PostgreSQL, Redis,
+Meilisearch, Mailpit, RabbitMQ, and Git worktree runtimes for Symfony, Laravel,
+Next.js, TanStack Start, Hono, and FastAPI DDD projects.**
+
+SEO description: DevHub is a local Docker Compose development hub for running
+shared infrastructure services and one-port-per-worktree project runtimes across
+PHP, JavaScript, TypeScript, and Python applications.
 
 DevHub is a Docker Compose development stack controlled by a single Bash CLI.
 Instead of defining database, cache, mail, search, and queue services in every
@@ -10,6 +16,36 @@ a shared Docker network.
 Built for teams and solo developers working on multiple web applications, APIs,
 or background workers that need common local infrastructure without per-project
 duplication.
+
+```text
+╔══════════════════════════════════════════════════════════════╗
+║ devhub CLI                                                   ║
+║ shared services + project registry + worktree commands       ║
+╚══════════════╤═══════════════════════════════════════════════╝
+               │ writes local config
+               ▼
+┌──────────────────────────────────────────────────────────────┐
+│ data/projects/<project>.env                                  │
+│ docker/<project>/*                                           │
+│ overrides/<project>-app.override.yml                         │
+└──────────────╤───────────────────────────────────────────────┘
+               │ starts runtime
+               ▼
+┌──────────────────────────────────────────────────────────────┐
+│ one project runtime container                                │
+│ worktrees/main -> http://localhost:8101                      │
+│ worktrees/feat-x -> http://localhost:8102                    │
+└──────────────╤───────────────────────────────────────────────┘
+               │ service DNS
+               ▼
+╔══════════════════════════════════════════════════════════════╗
+║ DevHub shared network                                        ║
+║ infra-postgres infra-redis infra-mailpit infra-meilisearch   ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+Legend: the committed CLI and templates generate local, ignored project runtime
+files. Runtime containers use the shared Docker network to reach DevHub services.
 
 ## Why DevHub
 
@@ -100,6 +136,77 @@ devhub open adminer     # open Adminer in browser
 devhub db create myapp  # create a PostgreSQL database + role
 ```
 
+## Worktree Projects
+
+DevHub can register a project once, generate its local runtime override, then
+serve each Git worktree on its own localhost port.
+
+Supported stacks:
+
+```text
+symfony
+laravel
+nextjs
+tanstack-start
+hono
+fastapi-ddd
+```
+
+Register an existing Symfony API project:
+
+```bash
+devhub project init iautos-api \
+  --stack symfony \
+  --root ~/dev/iautos-api \
+  --repo /home/kev/Documents/lab/perso/marketplace/iautos/apps/api \
+  --base develop
+
+devhub wt add iautos-api feat/payment develop
+devhub runtime iautos-api
+devhub wt list iautos-api
+```
+
+Create a new FastAPI project with a minimal DDD scaffold:
+
+```bash
+mkdir -p ~/dev
+cd ~/dev
+devhub project init billing-api --stack fastapi-ddd
+devhub runtime billing-api
+```
+
+By default, `devhub project init <name>` creates the project runtime root in the
+current directory as `./<name>`. Use `--root <path>` only when you want a
+different location.
+
+Common project examples:
+
+```bash
+devhub project init crm-api --stack laravel --repo git@github.com:org/crm-api.git
+devhub project init webapp --stack nextjs --repo git@github.com:org/webapp.git
+devhub project init console --stack tanstack-start --repo git@github.com:org/console.git
+devhub project init edge-api --stack hono --repo git@github.com:org/edge-api.git
+```
+
+Add worktrees after registration:
+
+```bash
+devhub wt add webapp main origin/main
+devhub wt add webapp feat/search origin/main
+devhub wt list webapp
+```
+
+Generated local files:
+
+```text
+data/projects/<project>.env
+docker/<project>/*
+overrides/<project>-app.override.yml
+```
+
+These files are intentionally ignored by Git. Committed templates live in
+`templates/<stack>/`.
+
 ## CLI Reference
 
 | Command | Description |
@@ -113,6 +220,12 @@ devhub db create myapp  # create a PostgreSQL database + role
 | `devhub db create <db> [user] [pass]` | Create PostgreSQL database and role |
 | `devhub db import [args]` | Run custom import script (`data/scripts/import-db.sh` or `DEVHUB_IMPORT_SCRIPT`) |
 | `devhub db list` | List PostgreSQL databases |
+| `devhub project init <name> --stack <stack>` | Register/generate a worktree-enabled project runtime |
+| `devhub project list` | List registered local projects |
+| `devhub project show <name>` | Show a local project registry file |
+| `devhub wt add <project> <branch> [base]` | Create/register a Git worktree on the next free port |
+| `devhub wt list <project>` | List worktree URLs for a project |
+| `devhub wt rm <project> <slug>` | Remove a registered project worktree |
 | `devhub runtime <project>` | Start a project runtime override |
 | `devhub down-runtime <project>` | Stop a project runtime |
 | `devhub doctor` | Diagnostics: health, network, ports |
@@ -168,7 +281,7 @@ services:
   myproject-worker:
     image: node:22-alpine
     container_name: myproject-worker
-    command: ["sh", "-lc", "npm install && npm run dev"]
+    command: ["sh", "-lc", "bun install && bun run dev"]
     volumes:
       - /path/to/project:/workspace
     working_dir: /workspace

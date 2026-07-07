@@ -1,0 +1,10 @@
+memory_limit=1024M
+upload_max_filesize=64M
+post_max_size=64M
+max_execution_time=120
+opcache.enable=1
+opcache.validate_timestamps=1
+opcache.revalidate_freq=0
+display_errors=1
+display_startup_errors=1
+error_reporting=E_ALL

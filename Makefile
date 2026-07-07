@@ -1,4 +1,4 @@
-.PHONY: help install uninstall up up-async down restart ps logs doctor db-create db-list runtime down-runtime
+.PHONY: help install uninstall up up-async down restart ps logs doctor db-create db-list runtime down-runtime project-list wt-list
 
 DEVHUB := ./bin/devhub
 
@@ -13,6 +13,8 @@ help:
 	@echo "  make doctor               Health/network/ports"
 	@echo "  make runtime PROJECT=x    Start project runtime override"
 	@echo "  make down-runtime PROJECT=x  Stop project runtime"
+	@echo "  make project-list         List registered projects"
+	@echo "  make wt-list PROJECT=x    List project worktrees"
 
 install:
 	@./data/scripts/install.sh
@@ -54,3 +56,10 @@ runtime:
 down-runtime:
 	@test -n "$(PROJECT)" || { echo "Usage: make down-runtime PROJECT=<name>"; exit 1; }
 	@$(DEVHUB) down-runtime $(PROJECT)
+
+project-list:
+	@$(DEVHUB) project list
+
+wt-list:
+	@test -n "$(PROJECT)" || { echo "Usage: make wt-list PROJECT=<name>"; exit 1; }
+	@$(DEVHUB) wt list $(PROJECT)
