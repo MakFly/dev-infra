@@ -1,0 +1,13 @@
+{
+  "name": "dev-infra",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "docs:build": "tailwindcss -i ./docs/input.css -o ./docs/styles.css --minify",
+    "docs:watch": "tailwindcss -i ./docs/input.css -o ./docs/styles.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.2",
+    "tailwindcss": "^4.3.2"
+  }
+}

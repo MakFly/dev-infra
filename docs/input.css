@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@source "./index.html";
+@source "./script.js";
+
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+
+  --color-ink: oklch(18% 0.027 164);
+  --color-ink-soft: oklch(38% 0.033 170);
+  --color-paper: oklch(98% 0.008 112);
+  --color-mist: oklch(94% 0.017 145);
+  --color-line: oklch(80% 0.027 150);
+  --color-forest: oklch(31% 0.105 160);
+  --color-forest-2: oklch(24% 0.075 165);
+  --color-amber-soft: oklch(83% 0.112 78);
+  --color-copper: oklch(59% 0.13 42);
+  --color-code: oklch(18% 0.026 165);
+  --color-code-text: oklch(92% 0.02 143);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    overflow-x: hidden;
+    background:
+      radial-gradient(circle at 0% 0%, oklch(84% 0.1 76 / 0.62), transparent 30rem),
+      radial-gradient(circle at 92% 8%, oklch(76% 0.09 168 / 0.38), transparent 26rem),
+      linear-gradient(135deg, oklch(98% 0.008 112), oklch(92% 0.018 153));
+  }
+
+  ::selection {
+    color: var(--color-paper);
+    background: var(--color-forest);
+  }
+}
+
+@layer components {
+  .copy-button {
+    position: absolute;
+    top: 0.7rem;
+    right: 0.7rem;
+    border: 1px solid oklch(76% 0.03 150 / 0.55);
+    border-radius: 0.5rem;
+    padding: 0.38rem 0.58rem;
+    color: var(--color-code-text);
+    background: oklch(28% 0.03 164);
+    font-size: 0.75rem;
+    font-weight: 800;
+  }
+
+  .copy-button:hover,
+  .copy-button:focus-visible {
+    background: oklch(34% 0.05 160);
+  }
+}

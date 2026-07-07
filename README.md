@@ -15,6 +15,14 @@ a shared Docker network.
 
 Full documentation: [makfly.github.io/dev-infra](https://makfly.github.io/dev-infra/)
 
+Documentation sources live in `docs/` and use Tailwind CSS. Rebuild the
+compiled stylesheet with:
+
+```bash
+bun install
+bun run docs:build
+```
+
 Built for teams and solo developers working on multiple web applications, APIs,
 or background workers that need common local infrastructure without per-project
 duplication.

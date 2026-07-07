@@ -21,6 +21,9 @@ Thumbs.db
 *.tmp
 *.cache
 
+# Package managers
+node_modules/
+
 # Docker generated files (never push content)
 /docker/*
 !/docker/.gitkeep

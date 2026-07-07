@@ -3,13 +3,16 @@ const siteNav = document.querySelector(".site-nav");
 
 if (navToggle && siteNav) {
   navToggle.addEventListener("click", () => {
-    const isOpen = siteNav.classList.toggle("is-open");
+    siteNav.classList.toggle("hidden");
+    siteNav.classList.toggle("flex");
+    const isOpen = siteNav.classList.contains("flex");
     navToggle.setAttribute("aria-expanded", String(isOpen));
   });
 
   siteNav.addEventListener("click", (event) => {
     if (event.target instanceof HTMLAnchorElement) {
-      siteNav.classList.remove("is-open");
+      siteNav.classList.add("hidden");
+      siteNav.classList.remove("flex");
       navToggle.setAttribute("aria-expanded", "false");
     }
   });
