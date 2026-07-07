@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DevHub, infrastructure Docker locale et runtimes Git worktree</title>
+    <meta
+      name="description"
+      content="DevHub is a local Docker Compose development hub with shared infrastructure and one-port-per-worktree runtimes for Symfony, Laravel, Next.js, TanStack Start, Hono, and FastAPI DDD."
+    >
+    <meta property="og:title" content="DevHub">
+    <meta
+      property="og:description"
+      content="Infrastructure Docker locale, services partages et runtimes Git worktree par port pour projets PHP, JavaScript, TypeScript et Python."
+    >
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#243832">
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <header class="site-header" id="top">
+      <a class="brand" href="#top" aria-label="DevHub accueil">
+        <span class="brand-mark" aria-hidden="true">dh</span>
+        <span>
+          <strong>DevHub</strong>
+          <small>Local infra and worktree runtimes</small>
+        </span>
+      </a>
+      <button class="nav-toggle" type="button" aria-controls="site-nav" aria-expanded="false">
+        Menu
+      </button>
+      <nav class="site-nav" id="site-nav" aria-label="Navigation principale">
+        <a href="#quick-start">Quick start</a>
+        <a href="#commands">Commandes</a>
+        <a href="#worktrees">Worktrees</a>
+        <a href="#stacks">Stacks</a>
+        <a href="#troubleshooting">Debug</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero section" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow">Docker Compose local, Git worktrees, un seul hub</p>
+          <h1 id="hero-title">Une infra de dev partagee, un port localhost par worktree.</h1>
+          <p class="hero-text">
+            DevHub demarre PostgreSQL, Redis, Meilisearch, Mailpit, RabbitMQ et les outils
+            de diagnostic une seule fois. Chaque projet peut ensuite generer son runtime local
+            et exposer ses worktrees sur des ports dedies, sans sous-domaines ni DNS local.
+          </p>
+          <div class="hero-actions" aria-label="Actions principales">
+            <a class="button primary" href="#install">Installer</a>
+            <a class="button secondary" href="#worktree-flow">Creer un runtime</a>
+          </div>
+        </div>
+
+        <div class="runtime-map" aria-label="Schema DevHub">
+          <div class="map-row">
+            <div class="map-node command">devhub CLI</div>
+            <span class="map-arrow">genere</span>
+            <div class="map-node local">fichiers locaux</div>
+          </div>
+          <div class="map-row">
+            <div class="map-node runtime">runtime projet</div>
+            <span class="map-arrow">sert</span>
+            <div class="map-node ports">8101, 8102, 8103</div>
+          </div>
+          <div class="map-row">
+            <div class="map-node network">dev-shared-net</div>
+            <span class="map-arrow">resout</span>
+            <div class="map-node services">infra-postgres, infra-redis</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section split" id="concept">
+        <div>
+          <p class="eyebrow">Ce que DevHub remplace</p>
+          <h2>Moins de Docker par projet, plus de coherence locale.</h2>
+        </div>
+        <div class="flow-list">
+          <div>
+            <strong>Services partages</strong>
+            <p>PostgreSQL, MySQL, Redis, Meilisearch, Mailpit, Adminer, Dozzle, RabbitMQ et Node tournent dans une stack centrale.</p>
+          </div>
+          <div>
+            <strong>Runtimes projet</strong>
+            <p>Chaque projet ajoute uniquement son runtime applicatif via un override Compose local.</p>
+          </div>
+          <div>
+            <strong>Worktrees isoles</strong>
+            <p>Chaque branche a son chemin, son port, sa base et son environnement local.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="install">
+        <div class="section-heading">
+          <p class="eyebrow">Installation</p>
+          <h2>Installer DevHub</h2>
+          <p>Installation sans sudo dans <code>~/.local/share/devhub</code>, avec un lien <code>devhub</code> dans <code>~/.local/bin</code>.</p>
+        </div>
+        <div class="command-grid">
+          <article class="command-panel">
+            <h3>Installation distante</h3>
+            <pre><code>curl -fsSL https://raw.githubusercontent.com/MakFly/dev-infra/main/install-remote.sh | bash</code></pre>
+          </article>
+          <article class="command-panel">
+            <h3>Chemin personnalise</h3>
+            <pre><code>DEVHUB_DIR=~/tools/devhub curl -fsSL https://raw.githubusercontent.com/MakFly/dev-infra/main/install-remote.sh | bash</code></pre>
+          </article>
+          <article class="command-panel">
+            <h3>Installation manuelle</h3>
+            <pre><code>git clone git@github.com:MakFly/dev-infra.git dev-infra
+cd dev-infra
+cp .env.example .env
+make install</code></pre>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="quick-start">
+        <div class="section-heading">
+          <p class="eyebrow">Quick start</p>
+          <h2>Demarrer les services et ouvrir les outils.</h2>
+        </div>
+        <div class="command-strip">
+          <pre><code>devhub up
+devhub ps
+devhub doctor
+devhub open adminer
+devhub db create myapp</code></pre>
+        </div>
+        <div class="service-table-wrap">
+          <table>
+            <caption>Services fournis par DevHub</caption>
+            <thead>
+              <tr>
+                <th>Service</th>
+                <th>Container</th>
+                <th>Ports</th>
+                <th>Profil</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>PostgreSQL 16</td><td>infra-postgres</td><td>5432</td><td>core</td></tr>
+              <tr><td>MySQL 8</td><td>infra-mysql</td><td>3306</td><td>core</td></tr>
+              <tr><td>Redis 7</td><td>infra-redis</td><td>6379</td><td>core</td></tr>
+              <tr><td>Meilisearch</td><td>infra-meilisearch</td><td>7700</td><td>core</td></tr>
+              <tr><td>Mailpit</td><td>infra-mailpit</td><td>1025, 8025</td><td>core</td></tr>
+              <tr><td>Adminer</td><td>infra-adminer</td><td>9080</td><td>core</td></tr>
+              <tr><td>Dozzle</td><td>infra-dozzle</td><td>8888</td><td>core</td></tr>
+              <tr><td>RabbitMQ</td><td>infra-rabbitmq</td><td>5672, 15672</td><td>async</td></tr>
+              <tr><td>Node.js 22</td><td>infra-node</td><td>3002, 5173</td><td>node</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="commands">
+        <div class="section-heading">
+          <p class="eyebrow">Reference CLI</p>
+          <h2>Toutes les commandes <code>devhub</code></h2>
+        </div>
+        <div class="reference-grid">
+          <article class="reference-block">
+            <h3>Services</h3>
+            <dl>
+              <dt><code>devhub up [--with profile]</code></dt>
+              <dd>Demarre les services partages. <code>core</code> est lance par defaut, <code>async</code> ajoute RabbitMQ.</dd>
+              <dt><code>devhub down</code></dt>
+              <dd>Stoppe et supprime les containers de la stack DevHub, sans supprimer les volumes.</dd>
+              <dt><code>devhub restart</code></dt>
+              <dd>Redemarre les services core.</dd>
+              <dt><code>devhub ps</code></dt>
+              <dd>Affiche l'etat Compose de tous les services.</dd>
+              <dt><code>devhub logs [service]</code></dt>
+              <dd>Suit les logs de toute la stack ou d'un service donne.</dd>
+            </dl>
+          </article>
+          <article class="reference-block">
+            <h3>Outils et diagnostics</h3>
+            <dl>
+              <dt><code>devhub open mailpit|adminer|dozzle|rabbitmq|meili</code></dt>
+              <dd>Ouvre une UI locale dans le navigateur.</dd>
+              <dt><code>devhub doctor</code></dt>
+              <dd>Controle le chemin DevHub, le reseau Docker, la sante des containers et les ports hote.</dd>
+              <dt><code>devhub help</code></dt>
+              <dd>Affiche l'aide CLI embarquee.</dd>
+            </dl>
+          </article>
+          <article class="reference-block">
+            <h3>Base de donnees</h3>
+            <dl>
+              <dt><code>devhub db create &lt;db&gt; [user] [password]</code></dt>
+              <dd>Cree une base PostgreSQL et un role. Par defaut, user et password reprennent le nom de base.</dd>
+              <dt><code>devhub db list</code></dt>
+              <dd>Liste les bases non-template du container <code>infra-postgres</code>.</dd>
+              <dt><code>devhub db import [args]</code></dt>
+              <dd>Lance un script d'import custom via <code>data/scripts/import-db.sh</code> ou <code>DEVHUB_IMPORT_SCRIPT</code>.</dd>
+            </dl>
+          </article>
+          <article class="reference-block">
+            <h3>Runtimes projet</h3>
+            <dl>
+              <dt><code>devhub runtime &lt;project&gt;</code></dt>
+              <dd>Demarre l'override <code>overrides/&lt;project&gt;-app.override.yml</code>.</dd>
+              <dt><code>devhub down-runtime &lt;project&gt;</code></dt>
+              <dd>Stoppe uniquement les services projet, pas l'infra partagee.</dd>
+            </dl>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="worktrees">
+        <div class="section-heading">
+          <p class="eyebrow">Project registry</p>
+          <h2>Creer un projet worktree-ready.</h2>
+          <p>Un projet enregistre ecrit un fichier local <code>data/projects/&lt;project&gt;.env</code>, un override Compose et les fichiers Docker runtime.</p>
+        </div>
+
+        <div class="command-grid" id="worktree-flow">
+          <article class="command-panel wide">
+            <h3>Projet Symfony existant, exemple iAutos API</h3>
+            <pre><code>devhub project init iautos-api \
+  --stack symfony \
+  --repo /home/kev/Documents/lab/perso/marketplace/iautos/apps/api \
+  --base develop
+
+devhub wt add iautos-api feat/payment develop
+devhub runtime iautos-api
+devhub wt list iautos-api</code></pre>
+          </article>
+          <article class="command-panel">
+            <h3>Nouveau projet FastAPI DDD</h3>
+            <pre><code>mkdir -p ~/dev
+cd ~/dev
+devhub project init billing-api --stack fastapi-ddd
+devhub runtime billing-api</code></pre>
+          </article>
+        </div>
+
+        <div class="reference-grid compact">
+          <article class="reference-block">
+            <h3><code>project init</code></h3>
+            <dl>
+              <dt><code>--stack</code></dt>
+              <dd>Obligatoire. Valeurs: <code>symfony</code>, <code>laravel</code>, <code>nextjs</code>, <code>tanstack-start</code>, <code>hono</code>, <code>fastapi-ddd</code>.</dd>
+              <dt><code>--root</code></dt>
+              <dd>Optionnel. Sans cette option, DevHub cree <code>./&lt;name&gt;</code> depuis le dossier courant.</dd>
+              <dt><code>--repo</code></dt>
+              <dd>Chemin Git existant, bare repo ou URL distante. Sans repo, DevHub initialise un bare repo local.</dd>
+              <dt><code>--base</code></dt>
+              <dd>Reference de base par defaut pour les nouveaux worktrees. Defaut: <code>main</code>.</dd>
+              <dt><code>--port-start</code>, <code>--port-end</code>, <code>--runtime-port</code></dt>
+              <dd>Controle les ports de worktrees et le port dashboard runtime.</dd>
+              <dt><code>--dev-command</code></dt>
+              <dd>Override la commande dev pour les runtimes Bun et Python.</dd>
+            </dl>
+          </article>
+          <article class="reference-block">
+            <h3><code>wt</code></h3>
+            <dl>
+              <dt><code>devhub wt add &lt;project&gt; &lt;branch&gt; [base]</code></dt>
+              <dd>Cree le worktree, choisit le premier port libre et genere <code>.env</code> ou <code>.env.local</code>.</dd>
+              <dt><code>devhub wt list &lt;project&gt;</code></dt>
+              <dd>Affiche les worktrees, branches et URLs <code>localhost</code>.</dd>
+              <dt><code>devhub wt rm &lt;project&gt; &lt;slug&gt;</code></dt>
+              <dd>Supprime le worktree via Git, retire les fichiers env locaux et recharge le runtime si besoin.</dd>
+            </dl>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="stacks">
+        <div class="section-heading">
+          <p class="eyebrow">Templates</p>
+          <h2>Comportement par stack</h2>
+        </div>
+        <div class="stack-matrix">
+          <article>
+            <h3>Symfony</h3>
+            <p>FrankenPHP, Caddy multi-sites, <code>public/</code>, <code>.env.local</code>, PostgreSQL, Redis, Mailpit, Meilisearch.</p>
+          </article>
+          <article>
+            <h3>Laravel</h3>
+            <p>FrankenPHP, Caddy, <code>.env</code>, variables <code>DB_*</code>, Redis et Mailpit preconfigures.</p>
+          </article>
+          <article>
+            <h3>Next.js</h3>
+            <p>Runtime Bun, <code>bun install</code>, <code>bun run dev</code>, port injecte via <code>DEVHUB_PORT</code>.</p>
+          </article>
+          <article>
+            <h3>TanStack Start</h3>
+            <p>Runtime Bun, host <code>0.0.0.0</code>, port par worktree, DSN partages disponibles.</p>
+          </article>
+          <article>
+            <h3>Hono</h3>
+            <p>Runtime Bun pour APIs TypeScript, variables <code>PORT</code>, <code>DATABASE_URL</code>, <code>REDIS_URL</code>.</p>
+          </article>
+          <article>
+            <h3>FastAPI DDD</h3>
+            <p>Runtime Python, Uvicorn reload, scaffold <code>domain</code>, <code>application</code>, <code>infrastructure</code>, <code>interfaces</code>.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="examples">
+        <div class="section-heading">
+          <p class="eyebrow">Exemples</p>
+          <h2>Recettes pretes a copier</h2>
+        </div>
+        <div class="command-grid">
+          <article class="command-panel">
+            <h3>Laravel</h3>
+            <pre><code>devhub project init crm-api --stack laravel --repo git@github.com:org/crm-api.git
+devhub wt add crm-api main origin/main
+devhub runtime crm-api</code></pre>
+          </article>
+          <article class="command-panel">
+            <h3>Next.js</h3>
+            <pre><code>devhub project init webapp --stack nextjs --repo git@github.com:org/webapp.git
+devhub wt add webapp feat/search origin/main
+devhub runtime webapp</code></pre>
+          </article>
+          <article class="command-panel">
+            <h3>Hono</h3>
+            <pre><code>devhub project init edge-api --stack hono --repo git@github.com:org/edge-api.git
+devhub wt add edge-api main origin/main
+devhub runtime edge-api</code></pre>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="troubleshooting">
+        <div class="section-heading">
+          <p class="eyebrow">Troubleshooting</p>
+          <h2>Problemes courants</h2>
+        </div>
+        <div class="reference-grid">
+          <article class="reference-block">
+            <h3>Port deja occupe</h3>
+            <p><code>wt add</code> saute les ports deja en ecoute si <code>ss</code> est disponible. Change la plage avec <code>--port-start</code> et <code>--port-end</code> si besoin.</p>
+          </article>
+          <article class="reference-block">
+            <h3>Projet inconnu</h3>
+            <p>Verifie <code>devhub project list</code>. Le registre local vit dans <code>data/projects/*.env</code> et reste ignore par Git.</p>
+          </article>
+          <article class="reference-block">
+            <h3>Override manquant</h3>
+            <p>Relance <code>devhub project init ...</code> ou verifie <code>overrides/&lt;project&gt;-app.override.yml</code>.</p>
+          </article>
+          <article class="reference-block">
+            <h3>Pages GitHub non publiee</h3>
+            <p>Le site est publie par workflow GitHub Actions. Controle le dernier run Pages et l'URL Pages du repository.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>DevHub</span>
+      <a href="https://github.com/MakFly/dev-infra">GitHub</a>
+      <a href="#top">Retour haut</a>
+    </footer>
+
+    <script src="./script.js"></script>
+  </body>
+</html>

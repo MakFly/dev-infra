@@ -13,6 +13,8 @@ Instead of defining database, cache, mail, search, and queue services in every
 project, you start them once with `devhub up` and connect any application through
 a shared Docker network.
 
+Full documentation: [makfly.github.io/dev-infra](https://makfly.github.io/dev-infra/)
+
 Built for teams and solo developers working on multiple web applications, APIs,
 or background workers that need common local infrastructure without per-project
 duplication.
