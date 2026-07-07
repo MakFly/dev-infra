@@ -14,22 +14,22 @@
       content="Infrastructure Docker locale, services partages et runtimes Git worktree par port pour projets PHP, JavaScript, TypeScript et Python."
     >
     <meta property="og:type" content="website">
-    <meta name="theme-color" content="#243832">
+    <meta name="theme-color" content="#f5f5f7">
     <link rel="stylesheet" href="./styles.css">
   </head>
-  <body class="font-sans text-ink antialiased">
-    <header class="sticky top-0 z-50 border-b border-line/70 bg-paper/88 backdrop-blur-xl">
-      <div class="mx-auto flex w-[min(1180px,calc(100%-2rem))] items-center justify-between gap-4 py-3">
+  <body class="font-sans text-graphite antialiased">
+    <header class="sticky top-0 z-50 border-b border-hairline bg-page/82 backdrop-blur-2xl">
+      <div class="mx-auto flex w-[min(1120px,calc(100%-2rem))] items-center justify-between gap-4 py-3">
         <a class="flex min-w-0 items-center gap-3" href="#top" aria-label="DevHub accueil">
-          <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-forest text-sm font-black text-paper shadow-[0_14px_40px_oklch(31%_0.105_160_/_0.22)]">dh</span>
+          <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-graphite text-[0.72rem] font-semibold text-page shadow-sm">dh</span>
           <span class="min-w-0">
-            <strong class="block text-base leading-tight">DevHub</strong>
-            <small class="block truncate text-sm text-ink-soft">Infra locale, worktrees, ports dedies</small>
+            <strong class="block text-[0.95rem] leading-tight tracking-normal">DevHub</strong>
+            <small class="block truncate text-[0.82rem] text-muted">Infra locale pour projets worktree</small>
           </span>
         </a>
 
         <button
-          class="nav-toggle inline-flex rounded-lg border border-line bg-paper px-4 py-2 font-semibold text-ink md:hidden"
+          class="nav-toggle inline-flex rounded-full border border-hairline bg-panel px-4 py-2 text-sm font-medium text-graphite shadow-sm md:hidden"
           type="button"
           aria-controls="site-nav"
           aria-expanded="false"
@@ -38,114 +38,139 @@
         </button>
 
         <nav
-          class="site-nav absolute left-4 right-4 top-[calc(100%+0.5rem)] hidden rounded-xl border border-line bg-paper p-2 shadow-2xl md:static md:flex md:border-0 md:bg-transparent md:p-0 md:shadow-none"
+          class="site-nav absolute left-4 right-4 top-[calc(100%+0.5rem)] hidden rounded-lg border border-hairline bg-panel p-2 shadow-xl md:static md:flex md:items-center md:gap-1 md:border-0 md:bg-transparent md:p-0 md:shadow-none"
           id="site-nav"
           aria-label="Navigation principale"
         >
-          <a class="block rounded-lg px-3 py-2 text-sm font-bold text-ink-soft hover:bg-mist hover:text-forest md:inline-block" href="#quick-start">Quick start</a>
-          <a class="block rounded-lg px-3 py-2 text-sm font-bold text-ink-soft hover:bg-mist hover:text-forest md:inline-block" href="#commands">Commandes</a>
-          <a class="block rounded-lg px-3 py-2 text-sm font-bold text-ink-soft hover:bg-mist hover:text-forest md:inline-block" href="#worktrees">Worktrees</a>
-          <a class="block rounded-lg px-3 py-2 text-sm font-bold text-ink-soft hover:bg-mist hover:text-forest md:inline-block" href="#stacks">Stacks</a>
-          <a class="block rounded-lg px-3 py-2 text-sm font-bold text-ink-soft hover:bg-mist hover:text-forest md:inline-block" href="#troubleshooting">Debug</a>
+          <a class="block rounded-lg px-3 py-2 text-sm font-medium text-muted transition hover:bg-soft hover:text-graphite md:inline-block" href="#quick-start">Quick start</a>
+          <a class="block rounded-lg px-3 py-2 text-sm font-medium text-muted transition hover:bg-soft hover:text-graphite md:inline-block" href="#commands">Commandes</a>
+          <a class="block rounded-lg px-3 py-2 text-sm font-medium text-muted transition hover:bg-soft hover:text-graphite md:inline-block" href="#worktrees">Worktrees</a>
+          <a class="block rounded-lg px-3 py-2 text-sm font-medium text-muted transition hover:bg-soft hover:text-graphite md:inline-block" href="#stacks">Stacks</a>
+          <a class="block rounded-lg px-3 py-2 text-sm font-medium text-muted transition hover:bg-soft hover:text-graphite md:inline-block" href="#troubleshooting">Debug</a>
         </nav>
       </div>
     </header>
 
     <main id="top">
-      <section class="mx-auto grid min-h-[84vh] w-[min(1180px,calc(100%-2rem))] items-center gap-10 py-14 md:grid-cols-[1.04fr_0.96fr] md:py-24">
+      <section class="mx-auto grid min-h-[84vh] w-[min(1120px,calc(100%-2rem))] items-center gap-12 py-16 md:grid-cols-[0.92fr_1.08fr] md:py-24">
         <div>
-          <p class="mb-5 max-w-[48ch] text-sm font-black uppercase tracking-[0.08em] text-copper">
-            Docker Compose local, Git worktrees, un seul hub
+          <p class="mb-5 inline-flex rounded-full border border-hairline bg-panel px-3 py-1 text-sm font-medium text-muted shadow-sm">
+            Docker Compose local. Git worktrees. Ports localhost.
           </p>
-          <h1 class="max-w-[11ch] text-[clamp(3.5rem,13vw,9.5rem)] font-black leading-[0.82] tracking-normal text-ink">
-            L’infra locale qui tient plusieurs branches.
+          <h1 class="text-[clamp(4.8rem,14vw,10.5rem)] font-semibold leading-[0.88] tracking-[-0.045em] text-graphite">
+            DevHub
           </h1>
-          <p class="mt-8 max-w-[62ch] text-lg leading-8 text-ink-soft md:text-xl">
-            DevHub demarre les services communs une fois, puis expose chaque worktree sur son port localhost.
-            Pas de sous-domaines, pas de DNS local, pas de Compose duplique dans chaque projet.
+          <p class="mt-7 max-w-[58ch] text-[clamp(1.25rem,2.2vw,1.85rem)] leading-[1.22] tracking-[-0.018em] text-graphite">
+            Une infra locale nette pour lancer plusieurs branches sans dupliquer Docker.
+          </p>
+          <p class="mt-5 max-w-[63ch] text-lg leading-8 text-muted">
+            Les services communs tournent une fois. Chaque worktree garde son dossier, son port, son environnement et ses URLs servies a la racine.
           </p>
           <div class="mt-8 flex flex-wrap gap-3">
-            <a class="rounded-lg bg-forest px-5 py-3 font-black text-paper shadow-[0_18px_45px_oklch(31%_0.105_160_/_0.24)] hover:bg-forest-2" href="#install">Installer</a>
-            <a class="rounded-lg border border-forest px-5 py-3 font-black text-forest hover:bg-mist" href="#worktree-flow">Creer un runtime</a>
+            <a class="rounded-full bg-blue px-5 py-3 text-sm font-semibold text-panel shadow-[0_16px_38px_oklch(58%_0.19_255_/_0.25)] transition hover:bg-blue-strong" href="#install">Installer</a>
+            <a class="rounded-full border border-hairline bg-panel px-5 py-3 text-sm font-semibold text-graphite shadow-sm transition hover:bg-soft" href="#worktree-flow">Créer un runtime</a>
           </div>
         </div>
 
-        <div class="grid gap-4">
-          <div class="rounded-2xl border border-line bg-paper/80 p-4 shadow-[0_28px_90px_oklch(28%_0.04_160_/_0.18)]">
-            <div class="grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
-              <div class="rounded-xl bg-forest p-5 text-center font-black text-paper">devhub CLI</div>
-              <div class="text-center text-xs font-black uppercase tracking-[0.08em] text-copper">genere</div>
-              <div class="rounded-xl border border-line bg-paper p-5 text-center font-black">fichiers locaux</div>
-            </div>
-            <div class="mt-3 grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
-              <div class="rounded-xl border border-line bg-paper p-5 text-center font-black">runtime projet</div>
-              <div class="text-center text-xs font-black uppercase tracking-[0.08em] text-copper">sert</div>
-              <div class="rounded-xl bg-amber-soft p-5 text-center font-black">8101, 8102, 8103</div>
-            </div>
-            <div class="mt-3 grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
-              <div class="rounded-xl bg-forest p-5 text-center font-black text-paper">dev-shared-net</div>
-              <div class="text-center text-xs font-black uppercase tracking-[0.08em] text-copper">resout</div>
-              <div class="rounded-xl border border-line bg-paper p-5 text-center font-black">infra-postgres, infra-redis</div>
-            </div>
-          </div>
-
-          <div class="grid gap-3 sm:grid-cols-3">
-            <div class="rounded-xl border border-line bg-paper/78 p-4">
-              <div class="text-3xl font-black text-forest">1</div>
-              <div class="mt-1 text-sm font-bold text-ink-soft">hub infra</div>
-            </div>
-            <div class="rounded-xl border border-line bg-paper/78 p-4">
-              <div class="text-3xl font-black text-forest">N</div>
-              <div class="mt-1 text-sm font-bold text-ink-soft">worktrees</div>
-            </div>
-            <div class="rounded-xl border border-line bg-paper/78 p-4">
-              <div class="text-3xl font-black text-forest">0</div>
-              <div class="mt-1 text-sm font-bold text-ink-soft">DNS local</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="mx-auto grid w-[min(1180px,calc(100%-2rem))] gap-10 border-t border-line py-20 md:grid-cols-[0.78fr_1.22fr]">
         <div>
-          <p class="mb-4 text-sm font-black uppercase tracking-[0.08em] text-copper">Modele mental</p>
-          <h2 class="max-w-[13ch] text-[clamp(2.4rem,6vw,5rem)] font-black leading-[0.9]">Une seule stack, plusieurs surfaces de travail.</h2>
-        </div>
-        <div class="grid gap-3">
-          <div class="rounded-xl border border-line bg-paper/80 p-5">
-            <strong class="text-lg">Services partages</strong>
-            <p class="mt-2 max-w-[70ch] text-ink-soft">PostgreSQL, MySQL, Redis, Meilisearch, Mailpit, Adminer, Dozzle, RabbitMQ et Node tournent dans une stack centrale.</p>
-          </div>
-          <div class="rounded-xl border border-line bg-paper/80 p-5">
-            <strong class="text-lg">Runtimes projet</strong>
-            <p class="mt-2 max-w-[70ch] text-ink-soft">Chaque projet ajoute uniquement son runtime applicatif via un override Compose local.</p>
-          </div>
-          <div class="rounded-xl border border-line bg-paper/80 p-5">
-            <strong class="text-lg">Worktrees isoles</strong>
-            <p class="mt-2 max-w-[70ch] text-ink-soft">Chaque branche a son chemin, son port, sa base et son environnement local.</p>
+          <div class="rounded-lg border border-hairline bg-panel p-3 shadow-[0_28px_90px_oklch(42%_0.025_260_/_0.16)]">
+            <div class="rounded-lg border border-hairline bg-window">
+              <div class="flex items-center justify-between border-b border-hairline px-4 py-3">
+                <div class="flex gap-2" aria-hidden="true">
+                  <span class="size-3 rounded-full bg-red-dot"></span>
+                  <span class="size-3 rounded-full bg-yellow-dot"></span>
+                  <span class="size-3 rounded-full bg-green-dot"></span>
+                </div>
+                <span class="text-xs font-medium text-muted">devhub.local</span>
+                <span class="w-12"></span>
+              </div>
+
+              <div class="grid gap-3 p-4">
+                <div class="rounded-lg bg-graphite p-5 text-panel">
+                  <div class="text-xs font-medium text-console-muted">active project</div>
+                  <div class="mt-2 flex flex-wrap items-end justify-between gap-4">
+                    <div>
+                      <div class="text-2xl font-semibold tracking-[-0.02em]">iautos-api</div>
+                      <div class="mt-1 text-sm text-console-muted">Symfony, FrankenPHP, PostgreSQL</div>
+                    </div>
+                    <div class="rounded-full bg-panel/10 px-3 py-1 text-sm font-medium">ready</div>
+                  </div>
+                </div>
+
+                <div class="grid gap-3 sm:grid-cols-3">
+                  <div class="rounded-lg border border-hairline bg-panel p-4">
+                    <div class="text-sm text-muted">main</div>
+                    <div class="mt-3 text-2xl font-semibold tracking-[-0.02em]">8101</div>
+                  </div>
+                  <div class="rounded-lg border border-hairline bg-panel p-4">
+                    <div class="text-sm text-muted">feat-payment</div>
+                    <div class="mt-3 text-2xl font-semibold tracking-[-0.02em]">8102</div>
+                  </div>
+                  <div class="rounded-lg border border-hairline bg-panel p-4">
+                    <div class="text-sm text-muted">fix-auth</div>
+                    <div class="mt-3 text-2xl font-semibold tracking-[-0.02em]">8103</div>
+                  </div>
+                </div>
+
+                <div class="rounded-lg border border-hairline bg-panel p-4">
+                  <div class="mb-3 flex items-center justify-between gap-3">
+                    <span class="text-sm font-medium text-muted">Shared network</span>
+                    <span class="rounded-full bg-blue-soft px-3 py-1 text-xs font-semibold text-blue">dev-shared-net</span>
+                  </div>
+                  <div class="grid gap-2 text-sm text-muted sm:grid-cols-3">
+                    <span class="rounded-lg bg-soft px-3 py-2">infra-postgres</span>
+                    <span class="rounded-lg bg-soft px-3 py-2">infra-redis</span>
+                    <span class="rounded-lg bg-soft px-3 py-2">infra-mailpit</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      <section class="mx-auto w-[min(1180px,calc(100%-2rem))] py-20" id="install">
+      <section class="mx-auto w-[min(1120px,calc(100%-2rem))] border-t border-hairline py-20">
+        <div class="grid gap-10 md:grid-cols-[0.78fr_1.22fr]">
+          <div>
+            <p class="mb-4 text-sm font-medium text-blue">Modèle mental</p>
+            <h2 class="max-w-[13ch] text-[clamp(2.35rem,5.2vw,4.8rem)] font-semibold leading-[0.95] tracking-[-0.04em]">Un hub. Des branches. Rien a bricoler.</h2>
+          </div>
+          <div class="grid gap-3">
+            <article class="rounded-lg border border-hairline bg-panel p-5 shadow-sm">
+              <strong class="text-lg font-semibold tracking-[-0.01em]">Services partagés</strong>
+              <p class="mt-2 max-w-[70ch] leading-7 text-muted">PostgreSQL, MySQL, Redis, Meilisearch, Mailpit, Adminer, Dozzle, RabbitMQ et Node tournent dans une stack centrale.</p>
+            </article>
+            <article class="rounded-lg border border-hairline bg-panel p-5 shadow-sm">
+              <strong class="text-lg font-semibold tracking-[-0.01em]">Runtimes projet</strong>
+              <p class="mt-2 max-w-[70ch] leading-7 text-muted">Chaque projet ajoute uniquement son runtime applicatif via un override Compose local.</p>
+            </article>
+            <article class="rounded-lg border border-hairline bg-panel p-5 shadow-sm">
+              <strong class="text-lg font-semibold tracking-[-0.01em]">Worktrees isolés</strong>
+              <p class="mt-2 max-w-[70ch] leading-7 text-muted">Chaque branche a son chemin, son port, sa base et son environnement local.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="mx-auto w-[min(1120px,calc(100%-2rem))] py-20" id="install">
         <div class="mb-8">
-          <p class="mb-3 text-sm font-black uppercase tracking-[0.08em] text-copper">Installation</p>
-          <h2 class="text-[clamp(2.4rem,6vw,5rem)] font-black leading-[0.9]">Installer DevHub</h2>
-          <p class="mt-4 max-w-[70ch] text-ink-soft">Installation sans sudo dans <code class="rounded bg-mist px-1.5 py-0.5 text-forest">~/.local/share/devhub</code>, avec un lien <code class="rounded bg-mist px-1.5 py-0.5 text-forest">devhub</code> dans <code class="rounded bg-mist px-1.5 py-0.5 text-forest">~/.local/bin</code>.</p>
+          <p class="mb-3 text-sm font-medium text-blue">Installation</p>
+          <h2 class="text-[clamp(2.35rem,5.2vw,4.8rem)] font-semibold leading-[0.95] tracking-[-0.04em]">Installer DevHub</h2>
+          <p class="mt-4 max-w-[70ch] leading-7 text-muted">Installation sans sudo dans <code class="rounded-lg bg-soft px-1.5 py-0.5 text-graphite">~/.local/share/devhub</code>, avec un lien <code class="rounded-lg bg-soft px-1.5 py-0.5 text-graphite">devhub</code> dans <code class="rounded-lg bg-soft px-1.5 py-0.5 text-graphite">~/.local/bin</code>.</p>
         </div>
 
         <div class="grid gap-4 lg:grid-cols-3">
-          <article class="rounded-xl border border-line bg-paper/80 p-4">
-            <h3 class="mb-3 text-lg font-black">Installation distante</h3>
-            <pre class="relative overflow-auto rounded-xl bg-code"><code class="block min-w-full whitespace-pre p-4 font-mono text-sm leading-6 text-code-text">curl -fsSL https://raw.githubusercontent.com/MakFly/dev-infra/main/install-remote.sh | bash</code></pre>
+          <article class="rounded-lg border border-hairline bg-panel p-4 shadow-sm">
+            <h3 class="mb-3 text-lg font-semibold tracking-[-0.01em]">Installation distante</h3>
+            <pre class="relative overflow-auto rounded-lg bg-code"><code class="block min-w-full whitespace-pre p-4 font-mono text-sm leading-6 text-code-text">curl -fsSL https://raw.githubusercontent.com/MakFly/dev-infra/main/install-remote.sh | bash</code></pre>
           </article>
-          <article class="rounded-xl border border-line bg-paper/80 p-4">
-            <h3 class="mb-3 text-lg font-black">Chemin personnalise</h3>
-            <pre class="relative overflow-auto rounded-xl bg-code"><code class="block min-w-full whitespace-pre p-4 font-mono text-sm leading-6 text-code-text">DEVHUB_DIR=~/tools/devhub curl -fsSL https://raw.githubusercontent.com/MakFly/dev-infra/main/install-remote.sh | bash</code></pre>
+          <article class="rounded-lg border border-hairline bg-panel p-4 shadow-sm">
+            <h3 class="mb-3 text-lg font-semibold tracking-[-0.01em]">Chemin personnalisé</h3>
+            <pre class="relative overflow-auto rounded-lg bg-code"><code class="block min-w-full whitespace-pre p-4 font-mono text-sm leading-6 text-code-text">DEVHUB_DIR=~/tools/devhub curl -fsSL https://raw.githubusercontent.com/MakFly/dev-infra/main/install-remote.sh | bash</code></pre>
           </article>
-          <article class="rounded-xl border border-line bg-paper/80 p-4">
-            <h3 class="mb-3 text-lg font-black">Installation manuelle</h3>
-            <pre class="relative overflow-auto rounded-xl bg-code"><code class="block min-w-full whitespace-pre p-4 font-mono text-sm leading-6 text-code-text">git clone git@github.com:MakFly/dev-infra.git dev-infra
+          <article class="rounded-lg border border-hairline bg-panel p-4 shadow-sm">
+            <h3 class="mb-3 text-lg font-semibold tracking-[-0.01em]">Installation manuelle</h3>
+            <pre class="relative overflow-auto rounded-lg bg-code"><code class="block min-w-full whitespace-pre p-4 font-mono text-sm leading-6 text-code-text">git clone git@github.com:MakFly/dev-infra.git dev-infra
 cd dev-infra
 cp .env.example .env
 make install</code></pre>
@@ -153,30 +178,30 @@ make install</code></pre>
         </div>
       </section>
 
-      <section class="mx-auto w-[min(1180px,calc(100%-2rem))] py-20" id="quick-start">
+      <section class="mx-auto w-[min(1120px,calc(100%-2rem))] py-20" id="quick-start">
         <div class="mb-8">
-          <p class="mb-3 text-sm font-black uppercase tracking-[0.08em] text-copper">Quick start</p>
-          <h2 class="max-w-[14ch] text-[clamp(2.4rem,6vw,5rem)] font-black leading-[0.9]">Demarrer, verifier, ouvrir.</h2>
+          <p class="mb-3 text-sm font-medium text-blue">Quick start</p>
+          <h2 class="max-w-[14ch] text-[clamp(2.35rem,5.2vw,4.8rem)] font-semibold leading-[0.95] tracking-[-0.04em]">Démarrer, vérifier, ouvrir.</h2>
         </div>
 
-        <pre class="relative mb-8 overflow-auto rounded-2xl bg-code shadow-[0_20px_70px_oklch(20%_0.03_160_/_0.2)]"><code class="block min-w-full whitespace-pre p-5 font-mono text-sm leading-7 text-code-text">devhub up
+        <pre class="relative mb-8 overflow-auto rounded-lg bg-code shadow-[0_18px_52px_oklch(34%_0.025_260_/_0.16)]"><code class="block min-w-full whitespace-pre p-5 font-mono text-sm leading-7 text-code-text">devhub up
 devhub ps
 devhub doctor
 devhub open adminer
 devhub db create myapp</code></pre>
 
-        <div class="overflow-auto rounded-2xl border border-line bg-paper/86">
-          <table class="min-w-[760px] w-full border-collapse text-left">
-            <caption class="px-5 py-4 text-left font-black text-ink-soft">Services fournis par DevHub</caption>
-            <thead class="bg-mist text-forest">
+        <div class="overflow-auto rounded-lg border border-hairline bg-panel shadow-sm">
+          <table class="w-full min-w-[760px] border-collapse text-left">
+            <caption class="px-5 py-4 text-left text-sm font-semibold text-muted">Services fournis par DevHub</caption>
+            <thead class="bg-soft text-graphite">
               <tr>
-                <th class="border-t border-line px-5 py-3">Service</th>
-                <th class="border-t border-line px-5 py-3">Container</th>
-                <th class="border-t border-line px-5 py-3">Ports</th>
-                <th class="border-t border-line px-5 py-3">Profil</th>
+                <th class="border-t border-hairline px-5 py-3 text-sm font-semibold">Service</th>
+                <th class="border-t border-hairline px-5 py-3 text-sm font-semibold">Container</th>
+                <th class="border-t border-hairline px-5 py-3 text-sm font-semibold">Ports</th>
+                <th class="border-t border-hairline px-5 py-3 text-sm font-semibold">Profil</th>
               </tr>
             </thead>
-            <tbody class="[&_td]:border-t [&_td]:border-line [&_td]:px-5 [&_td]:py-3">
+            <tbody class="[&_td]:border-t [&_td]:border-hairline [&_td]:px-5 [&_td]:py-3 [&_td]:text-sm [&_td]:text-muted">
               <tr><td>PostgreSQL 16</td><td>infra-postgres</td><td>5432</td><td>core</td></tr>
               <tr><td>MySQL 8</td><td>infra-mysql</td><td>3306</td><td>core</td></tr>
               <tr><td>Redis 7</td><td>infra-redis</td><td>6379</td><td>core</td></tr>
@@ -191,63 +216,63 @@ devhub db create myapp</code></pre>
         </div>
       </section>
 
-      <section class="mx-auto w-[min(1180px,calc(100%-2rem))] py-20" id="commands">
+      <section class="mx-auto w-[min(1120px,calc(100%-2rem))] py-20" id="commands">
         <div class="mb-8">
-          <p class="mb-3 text-sm font-black uppercase tracking-[0.08em] text-copper">Reference CLI</p>
-          <h2 class="text-[clamp(2.4rem,6vw,5rem)] font-black leading-[0.9]">Toutes les commandes <code class="text-forest">devhub</code></h2>
+          <p class="mb-3 text-sm font-medium text-blue">Référence CLI</p>
+          <h2 class="text-[clamp(2.35rem,5.2vw,4.8rem)] font-semibold leading-[0.95] tracking-[-0.04em]">Toutes les commandes <code class="text-blue">devhub</code></h2>
         </div>
 
         <div class="grid gap-4 lg:grid-cols-2">
-          <article class="rounded-xl border border-line bg-paper/80 p-5">
-            <h3 class="mb-4 text-xl font-black">Services</h3>
+          <article class="rounded-lg border border-hairline bg-panel p-5 shadow-sm">
+            <h3 class="mb-4 text-xl font-semibold tracking-[-0.01em]">Services</h3>
             <dl class="space-y-4">
-              <div><dt class="font-mono font-black text-forest">devhub up [--with profile]</dt><dd class="mt-1 text-ink-soft">Demarre les services partages. <code>core</code> est lance par defaut, <code>async</code> ajoute RabbitMQ.</dd></div>
-              <div><dt class="font-mono font-black text-forest">devhub down</dt><dd class="mt-1 text-ink-soft">Stoppe et supprime les containers de la stack DevHub, sans supprimer les volumes.</dd></div>
-              <div><dt class="font-mono font-black text-forest">devhub restart</dt><dd class="mt-1 text-ink-soft">Redemarre les services core.</dd></div>
-              <div><dt class="font-mono font-black text-forest">devhub ps</dt><dd class="mt-1 text-ink-soft">Affiche l'etat Compose de tous les services.</dd></div>
-              <div><dt class="font-mono font-black text-forest">devhub logs [service]</dt><dd class="mt-1 text-ink-soft">Suit les logs de toute la stack ou d'un service donne.</dd></div>
+              <div><dt class="font-mono text-sm font-semibold text-blue">devhub up [--with profile]</dt><dd class="mt-1 leading-7 text-muted">Démarre les services partagés. <code>core</code> est lancé par défaut, <code>async</code> ajoute RabbitMQ.</dd></div>
+              <div><dt class="font-mono text-sm font-semibold text-blue">devhub down</dt><dd class="mt-1 leading-7 text-muted">Stoppe et supprime les containers de la stack DevHub, sans supprimer les volumes.</dd></div>
+              <div><dt class="font-mono text-sm font-semibold text-blue">devhub restart</dt><dd class="mt-1 leading-7 text-muted">Redémarre les services core.</dd></div>
+              <div><dt class="font-mono text-sm font-semibold text-blue">devhub ps</dt><dd class="mt-1 leading-7 text-muted">Affiche l'état Compose de tous les services.</dd></div>
+              <div><dt class="font-mono text-sm font-semibold text-blue">devhub logs [service]</dt><dd class="mt-1 leading-7 text-muted">Suit les logs de toute la stack ou d'un service donné.</dd></div>
             </dl>
           </article>
 
-          <article class="rounded-xl border border-line bg-paper/80 p-5">
-            <h3 class="mb-4 text-xl font-black">Outils et diagnostics</h3>
+          <article class="rounded-lg border border-hairline bg-panel p-5 shadow-sm">
+            <h3 class="mb-4 text-xl font-semibold tracking-[-0.01em]">Outils et diagnostics</h3>
             <dl class="space-y-4">
-              <div><dt class="font-mono font-black text-forest">devhub open mailpit|adminer|dozzle|rabbitmq|meili</dt><dd class="mt-1 text-ink-soft">Ouvre une UI locale dans le navigateur.</dd></div>
-              <div><dt class="font-mono font-black text-forest">devhub doctor</dt><dd class="mt-1 text-ink-soft">Controle le chemin DevHub, le reseau Docker, la sante des containers et les ports hote.</dd></div>
-              <div><dt class="font-mono font-black text-forest">devhub help</dt><dd class="mt-1 text-ink-soft">Affiche l'aide CLI embarquee.</dd></div>
+              <div><dt class="font-mono text-sm font-semibold text-blue">devhub open mailpit|adminer|dozzle|rabbitmq|meili</dt><dd class="mt-1 leading-7 text-muted">Ouvre une UI locale dans le navigateur.</dd></div>
+              <div><dt class="font-mono text-sm font-semibold text-blue">devhub doctor</dt><dd class="mt-1 leading-7 text-muted">Contrôle le chemin DevHub, le réseau Docker, la santé des containers et les ports hôte.</dd></div>
+              <div><dt class="font-mono text-sm font-semibold text-blue">devhub help</dt><dd class="mt-1 leading-7 text-muted">Affiche l'aide CLI embarquée.</dd></div>
             </dl>
           </article>
 
-          <article class="rounded-xl border border-line bg-paper/80 p-5">
-            <h3 class="mb-4 text-xl font-black">Base de donnees</h3>
+          <article class="rounded-lg border border-hairline bg-panel p-5 shadow-sm">
+            <h3 class="mb-4 text-xl font-semibold tracking-[-0.01em]">Base de données</h3>
             <dl class="space-y-4">
-              <div><dt class="font-mono font-black text-forest">devhub db create &lt;db&gt; [user] [password]</dt><dd class="mt-1 text-ink-soft">Cree une base PostgreSQL et un role. Par defaut, user et password reprennent le nom de base.</dd></div>
-              <div><dt class="font-mono font-black text-forest">devhub db list</dt><dd class="mt-1 text-ink-soft">Liste les bases non-template du container <code>infra-postgres</code>.</dd></div>
-              <div><dt class="font-mono font-black text-forest">devhub db import [args]</dt><dd class="mt-1 text-ink-soft">Lance un script d'import custom via <code>data/scripts/import-db.sh</code> ou <code>DEVHUB_IMPORT_SCRIPT</code>.</dd></div>
+              <div><dt class="font-mono text-sm font-semibold text-blue">devhub db create &lt;db&gt; [user] [password]</dt><dd class="mt-1 leading-7 text-muted">Crée une base PostgreSQL et un rôle. Par défaut, user et password reprennent le nom de base.</dd></div>
+              <div><dt class="font-mono text-sm font-semibold text-blue">devhub db list</dt><dd class="mt-1 leading-7 text-muted">Liste les bases non-template du container <code>infra-postgres</code>.</dd></div>
+              <div><dt class="font-mono text-sm font-semibold text-blue">devhub db import [args]</dt><dd class="mt-1 leading-7 text-muted">Lance un script d'import custom via <code>data/scripts/import-db.sh</code> ou <code>DEVHUB_IMPORT_SCRIPT</code>.</dd></div>
             </dl>
           </article>
 
-          <article class="rounded-xl border border-line bg-paper/80 p-5">
-            <h3 class="mb-4 text-xl font-black">Runtimes projet</h3>
+          <article class="rounded-lg border border-hairline bg-panel p-5 shadow-sm">
+            <h3 class="mb-4 text-xl font-semibold tracking-[-0.01em]">Runtimes projet</h3>
             <dl class="space-y-4">
-              <div><dt class="font-mono font-black text-forest">devhub runtime &lt;project&gt;</dt><dd class="mt-1 text-ink-soft">Demarre l'override <code>overrides/&lt;project&gt;-app.override.yml</code>.</dd></div>
-              <div><dt class="font-mono font-black text-forest">devhub down-runtime &lt;project&gt;</dt><dd class="mt-1 text-ink-soft">Stoppe uniquement les services projet, pas l'infra partagee.</dd></div>
+              <div><dt class="font-mono text-sm font-semibold text-blue">devhub runtime &lt;project&gt;</dt><dd class="mt-1 leading-7 text-muted">Démarre l'override <code>overrides/&lt;project&gt;-app.override.yml</code>.</dd></div>
+              <div><dt class="font-mono text-sm font-semibold text-blue">devhub down-runtime &lt;project&gt;</dt><dd class="mt-1 leading-7 text-muted">Stoppe uniquement les services projet, pas l'infra partagée.</dd></div>
             </dl>
           </article>
         </div>
       </section>
 
-      <section class="mx-auto w-[min(1180px,calc(100%-2rem))] py-20" id="worktrees">
+      <section class="mx-auto w-[min(1120px,calc(100%-2rem))] py-20" id="worktrees">
         <div class="mb-8">
-          <p class="mb-3 text-sm font-black uppercase tracking-[0.08em] text-copper">Project registry</p>
-          <h2 class="max-w-[13ch] text-[clamp(2.4rem,6vw,5rem)] font-black leading-[0.9]">Creer un projet worktree-ready.</h2>
-          <p class="mt-4 max-w-[72ch] text-ink-soft">Un projet enregistre ecrit un fichier local <code>data/projects/&lt;project&gt;.env</code>, un override Compose et les fichiers Docker runtime.</p>
+          <p class="mb-3 text-sm font-medium text-blue">Project registry</p>
+          <h2 class="max-w-[13ch] text-[clamp(2.35rem,5.2vw,4.8rem)] font-semibold leading-[0.95] tracking-[-0.04em]">Créer un projet prêt pour les worktrees.</h2>
+          <p class="mt-4 max-w-[72ch] leading-7 text-muted">Un projet enregistré écrit un fichier local <code>data/projects/&lt;project&gt;.env</code>, un override Compose et les fichiers Docker runtime.</p>
         </div>
 
         <div class="grid gap-4 lg:grid-cols-[1.25fr_0.75fr]" id="worktree-flow">
-          <article class="rounded-xl border border-line bg-paper/80 p-4">
-            <h3 class="mb-3 text-lg font-black">Projet Symfony existant, exemple iAutos API</h3>
-            <pre class="relative overflow-auto rounded-xl bg-code"><code class="block min-w-full whitespace-pre p-4 font-mono text-sm leading-6 text-code-text">devhub project init iautos-api \
+          <article class="rounded-lg border border-hairline bg-panel p-4 shadow-sm">
+            <h3 class="mb-3 text-lg font-semibold tracking-[-0.01em]">Projet Symfony existant, exemple iAutos API</h3>
+            <pre class="relative overflow-auto rounded-lg bg-code"><code class="block min-w-full whitespace-pre p-4 font-mono text-sm leading-6 text-code-text">devhub project init iautos-api \
   --stack symfony \
   --repo /home/kev/Documents/lab/perso/marketplace/iautos/apps/api \
   --base develop
@@ -256,9 +281,9 @@ devhub wt add iautos-api feat/payment develop
 devhub runtime iautos-api
 devhub wt list iautos-api</code></pre>
           </article>
-          <article class="rounded-xl border border-line bg-paper/80 p-4">
-            <h3 class="mb-3 text-lg font-black">Nouveau projet FastAPI DDD</h3>
-            <pre class="relative overflow-auto rounded-xl bg-code"><code class="block min-w-full whitespace-pre p-4 font-mono text-sm leading-6 text-code-text">mkdir -p ~/dev
+          <article class="rounded-lg border border-hairline bg-panel p-4 shadow-sm">
+            <h3 class="mb-3 text-lg font-semibold tracking-[-0.01em]">Nouveau projet FastAPI DDD</h3>
+            <pre class="relative overflow-auto rounded-lg bg-code"><code class="block min-w-full whitespace-pre p-4 font-mono text-sm leading-6 text-code-text">mkdir -p ~/dev
 cd ~/dev
 devhub project init billing-api --stack fastapi-ddd
 devhub runtime billing-api</code></pre>
@@ -266,120 +291,120 @@ devhub runtime billing-api</code></pre>
         </div>
 
         <div class="mt-4 grid gap-4 lg:grid-cols-2">
-          <article class="rounded-xl border border-line bg-paper/80 p-5">
-            <h3 class="mb-4 text-xl font-black"><code>project init</code></h3>
+          <article class="rounded-lg border border-hairline bg-panel p-5 shadow-sm">
+            <h3 class="mb-4 text-xl font-semibold tracking-[-0.01em]"><code>project init</code></h3>
             <dl class="space-y-4">
-              <div><dt class="font-mono font-black text-forest">--stack</dt><dd class="mt-1 text-ink-soft">Obligatoire. Valeurs: <code>symfony</code>, <code>laravel</code>, <code>nextjs</code>, <code>tanstack-start</code>, <code>hono</code>, <code>fastapi-ddd</code>.</dd></div>
-              <div><dt class="font-mono font-black text-forest">--root</dt><dd class="mt-1 text-ink-soft">Optionnel. Sans cette option, DevHub cree <code>./&lt;name&gt;</code> depuis le dossier courant.</dd></div>
-              <div><dt class="font-mono font-black text-forest">--repo</dt><dd class="mt-1 text-ink-soft">Chemin Git existant, bare repo ou URL distante.</dd></div>
-              <div><dt class="font-mono font-black text-forest">--base</dt><dd class="mt-1 text-ink-soft">Reference de base par defaut pour les nouveaux worktrees. Defaut: <code>main</code>.</dd></div>
-              <div><dt class="font-mono font-black text-forest">--port-start, --port-end, --runtime-port</dt><dd class="mt-1 text-ink-soft">Controle les ports de worktrees et le port dashboard runtime.</dd></div>
+              <div><dt class="font-mono text-sm font-semibold text-blue">--stack</dt><dd class="mt-1 leading-7 text-muted">Obligatoire. Valeurs: <code>symfony</code>, <code>laravel</code>, <code>nextjs</code>, <code>tanstack-start</code>, <code>hono</code>, <code>fastapi-ddd</code>.</dd></div>
+              <div><dt class="font-mono text-sm font-semibold text-blue">--root</dt><dd class="mt-1 leading-7 text-muted">Optionnel. Sans cette option, DevHub crée <code>./&lt;name&gt;</code> depuis le dossier courant.</dd></div>
+              <div><dt class="font-mono text-sm font-semibold text-blue">--repo</dt><dd class="mt-1 leading-7 text-muted">Chemin Git existant, bare repo ou URL distante.</dd></div>
+              <div><dt class="font-mono text-sm font-semibold text-blue">--base</dt><dd class="mt-1 leading-7 text-muted">Référence de base par défaut pour les nouveaux worktrees. Défaut: <code>main</code>.</dd></div>
+              <div><dt class="font-mono text-sm font-semibold text-blue">--port-start, --port-end, --runtime-port</dt><dd class="mt-1 leading-7 text-muted">Contrôle les ports de worktrees et le port dashboard runtime.</dd></div>
             </dl>
           </article>
 
-          <article class="rounded-xl border border-line bg-paper/80 p-5">
-            <h3 class="mb-4 text-xl font-black"><code>wt</code></h3>
+          <article class="rounded-lg border border-hairline bg-panel p-5 shadow-sm">
+            <h3 class="mb-4 text-xl font-semibold tracking-[-0.01em]"><code>wt</code></h3>
             <dl class="space-y-4">
-              <div><dt class="font-mono font-black text-forest">devhub wt add &lt;project&gt; &lt;branch&gt; [base]</dt><dd class="mt-1 text-ink-soft">Cree le worktree, choisit le premier port libre et genere <code>.env</code> ou <code>.env.local</code>.</dd></div>
-              <div><dt class="font-mono font-black text-forest">devhub wt list &lt;project&gt;</dt><dd class="mt-1 text-ink-soft">Affiche les worktrees, branches et URLs <code>localhost</code>.</dd></div>
-              <div><dt class="font-mono font-black text-forest">devhub wt rm &lt;project&gt; &lt;slug&gt;</dt><dd class="mt-1 text-ink-soft">Supprime le worktree via Git, retire les fichiers env locaux et recharge le runtime si besoin.</dd></div>
+              <div><dt class="font-mono text-sm font-semibold text-blue">devhub wt add &lt;project&gt; &lt;branch&gt; [base]</dt><dd class="mt-1 leading-7 text-muted">Crée le worktree, choisit le premier port libre et génère <code>.env</code> ou <code>.env.local</code>.</dd></div>
+              <div><dt class="font-mono text-sm font-semibold text-blue">devhub wt list &lt;project&gt;</dt><dd class="mt-1 leading-7 text-muted">Affiche les worktrees, branches et URLs <code>localhost</code>.</dd></div>
+              <div><dt class="font-mono text-sm font-semibold text-blue">devhub wt rm &lt;project&gt; &lt;slug&gt;</dt><dd class="mt-1 leading-7 text-muted">Supprime le worktree via Git, retire les fichiers env locaux et recharge le runtime si besoin.</dd></div>
             </dl>
           </article>
         </div>
       </section>
 
-      <section class="mx-auto w-[min(1180px,calc(100%-2rem))] py-20" id="stacks">
+      <section class="mx-auto w-[min(1120px,calc(100%-2rem))] py-20" id="stacks">
         <div class="mb-8">
-          <p class="mb-3 text-sm font-black uppercase tracking-[0.08em] text-copper">Templates</p>
-          <h2 class="text-[clamp(2.4rem,6vw,5rem)] font-black leading-[0.9]">Comportement par stack</h2>
+          <p class="mb-3 text-sm font-medium text-blue">Templates</p>
+          <h2 class="text-[clamp(2.35rem,5.2vw,4.8rem)] font-semibold leading-[0.95] tracking-[-0.04em]">Comportement par stack</h2>
         </div>
 
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <article class="min-h-48 rounded-xl border border-line bg-paper/80 p-5">
-            <h3 class="text-xl font-black">Symfony</h3>
-            <p class="mt-3 text-ink-soft">FrankenPHP, Caddy multi-sites, <code>public/</code>, <code>.env.local</code>, PostgreSQL, Redis, Mailpit, Meilisearch.</p>
+          <article class="min-h-44 rounded-lg border border-hairline bg-panel p-5 shadow-sm">
+            <h3 class="text-xl font-semibold tracking-[-0.01em]">Symfony</h3>
+            <p class="mt-3 leading-7 text-muted">FrankenPHP, Caddy multi-sites, <code>public/</code>, <code>.env.local</code>, PostgreSQL, Redis, Mailpit, Meilisearch.</p>
           </article>
-          <article class="min-h-48 rounded-xl border border-line bg-paper/80 p-5">
-            <h3 class="text-xl font-black">Laravel</h3>
-            <p class="mt-3 text-ink-soft">FrankenPHP, Caddy, <code>.env</code>, variables <code>DB_*</code>, Redis et Mailpit preconfigures.</p>
+          <article class="min-h-44 rounded-lg border border-hairline bg-panel p-5 shadow-sm">
+            <h3 class="text-xl font-semibold tracking-[-0.01em]">Laravel</h3>
+            <p class="mt-3 leading-7 text-muted">FrankenPHP, Caddy, <code>.env</code>, variables <code>DB_*</code>, Redis et Mailpit préconfigurés.</p>
           </article>
-          <article class="min-h-48 rounded-xl border border-line bg-paper/80 p-5">
-            <h3 class="text-xl font-black">Next.js</h3>
-            <p class="mt-3 text-ink-soft">Runtime Bun, <code>bun install</code>, <code>bun run dev</code>, port injecte via <code>DEVHUB_PORT</code>.</p>
+          <article class="min-h-44 rounded-lg border border-hairline bg-panel p-5 shadow-sm">
+            <h3 class="text-xl font-semibold tracking-[-0.01em]">Next.js</h3>
+            <p class="mt-3 leading-7 text-muted">Runtime Bun, <code>bun install</code>, <code>bun run dev</code>, port injecté via <code>DEVHUB_PORT</code>.</p>
           </article>
-          <article class="min-h-48 rounded-xl border border-line bg-paper/80 p-5">
-            <h3 class="text-xl font-black">TanStack Start</h3>
-            <p class="mt-3 text-ink-soft">Runtime Bun, host <code>0.0.0.0</code>, port par worktree, DSN partages disponibles.</p>
+          <article class="min-h-44 rounded-lg border border-hairline bg-panel p-5 shadow-sm">
+            <h3 class="text-xl font-semibold tracking-[-0.01em]">TanStack Start</h3>
+            <p class="mt-3 leading-7 text-muted">Runtime Bun, host <code>0.0.0.0</code>, port par worktree, DSN partagés disponibles.</p>
           </article>
-          <article class="min-h-48 rounded-xl border border-line bg-paper/80 p-5">
-            <h3 class="text-xl font-black">Hono</h3>
-            <p class="mt-3 text-ink-soft">Runtime Bun pour APIs TypeScript, variables <code>PORT</code>, <code>DATABASE_URL</code>, <code>REDIS_URL</code>.</p>
+          <article class="min-h-44 rounded-lg border border-hairline bg-panel p-5 shadow-sm">
+            <h3 class="text-xl font-semibold tracking-[-0.01em]">Hono</h3>
+            <p class="mt-3 leading-7 text-muted">Runtime Bun pour APIs TypeScript, variables <code>PORT</code>, <code>DATABASE_URL</code>, <code>REDIS_URL</code>.</p>
           </article>
-          <article class="min-h-48 rounded-xl border border-line bg-paper/80 p-5">
-            <h3 class="text-xl font-black">FastAPI DDD</h3>
-            <p class="mt-3 text-ink-soft">Runtime Python, Uvicorn reload, scaffold <code>domain</code>, <code>application</code>, <code>infrastructure</code>, <code>interfaces</code>.</p>
+          <article class="min-h-44 rounded-lg border border-hairline bg-panel p-5 shadow-sm">
+            <h3 class="text-xl font-semibold tracking-[-0.01em]">FastAPI DDD</h3>
+            <p class="mt-3 leading-7 text-muted">Runtime Python, Uvicorn reload, scaffold <code>domain</code>, <code>application</code>, <code>infrastructure</code>, <code>interfaces</code>.</p>
           </article>
         </div>
       </section>
 
-      <section class="mx-auto w-[min(1180px,calc(100%-2rem))] py-20" id="examples">
+      <section class="mx-auto w-[min(1120px,calc(100%-2rem))] py-20" id="examples">
         <div class="mb-8">
-          <p class="mb-3 text-sm font-black uppercase tracking-[0.08em] text-copper">Exemples</p>
-          <h2 class="text-[clamp(2.4rem,6vw,5rem)] font-black leading-[0.9]">Recettes pretes a copier</h2>
+          <p class="mb-3 text-sm font-medium text-blue">Exemples</p>
+          <h2 class="text-[clamp(2.35rem,5.2vw,4.8rem)] font-semibold leading-[0.95] tracking-[-0.04em]">Recettes prêtes a copier</h2>
         </div>
         <div class="grid gap-4 lg:grid-cols-3">
-          <article class="rounded-xl border border-line bg-paper/80 p-4">
-            <h3 class="mb-3 text-lg font-black">Laravel</h3>
-            <pre class="relative overflow-auto rounded-xl bg-code"><code class="block min-w-full whitespace-pre p-4 font-mono text-sm leading-6 text-code-text">devhub project init crm-api --stack laravel --repo git@github.com:org/crm-api.git
+          <article class="rounded-lg border border-hairline bg-panel p-4 shadow-sm">
+            <h3 class="mb-3 text-lg font-semibold tracking-[-0.01em]">Laravel</h3>
+            <pre class="relative overflow-auto rounded-lg bg-code"><code class="block min-w-full whitespace-pre p-4 font-mono text-sm leading-6 text-code-text">devhub project init crm-api --stack laravel --repo git@github.com:org/crm-api.git
 devhub wt add crm-api main origin/main
 devhub runtime crm-api</code></pre>
           </article>
-          <article class="rounded-xl border border-line bg-paper/80 p-4">
-            <h3 class="mb-3 text-lg font-black">Next.js</h3>
-            <pre class="relative overflow-auto rounded-xl bg-code"><code class="block min-w-full whitespace-pre p-4 font-mono text-sm leading-6 text-code-text">devhub project init webapp --stack nextjs --repo git@github.com:org/webapp.git
+          <article class="rounded-lg border border-hairline bg-panel p-4 shadow-sm">
+            <h3 class="mb-3 text-lg font-semibold tracking-[-0.01em]">Next.js</h3>
+            <pre class="relative overflow-auto rounded-lg bg-code"><code class="block min-w-full whitespace-pre p-4 font-mono text-sm leading-6 text-code-text">devhub project init webapp --stack nextjs --repo git@github.com:org/webapp.git
 devhub wt add webapp feat/search origin/main
 devhub runtime webapp</code></pre>
           </article>
-          <article class="rounded-xl border border-line bg-paper/80 p-4">
-            <h3 class="mb-3 text-lg font-black">Hono</h3>
-            <pre class="relative overflow-auto rounded-xl bg-code"><code class="block min-w-full whitespace-pre p-4 font-mono text-sm leading-6 text-code-text">devhub project init edge-api --stack hono --repo git@github.com:org/edge-api.git
+          <article class="rounded-lg border border-hairline bg-panel p-4 shadow-sm">
+            <h3 class="mb-3 text-lg font-semibold tracking-[-0.01em]">Hono</h3>
+            <pre class="relative overflow-auto rounded-lg bg-code"><code class="block min-w-full whitespace-pre p-4 font-mono text-sm leading-6 text-code-text">devhub project init edge-api --stack hono --repo git@github.com:org/edge-api.git
 devhub wt add edge-api main origin/main
 devhub runtime edge-api</code></pre>
           </article>
         </div>
       </section>
 
-      <section class="mx-auto w-[min(1180px,calc(100%-2rem))] py-20" id="troubleshooting">
+      <section class="mx-auto w-[min(1120px,calc(100%-2rem))] py-20" id="troubleshooting">
         <div class="mb-8">
-          <p class="mb-3 text-sm font-black uppercase tracking-[0.08em] text-copper">Troubleshooting</p>
-          <h2 class="text-[clamp(2.4rem,6vw,5rem)] font-black leading-[0.9]">Problemes courants</h2>
+          <p class="mb-3 text-sm font-medium text-blue">Troubleshooting</p>
+          <h2 class="text-[clamp(2.35rem,5.2vw,4.8rem)] font-semibold leading-[0.95] tracking-[-0.04em]">Problèmes courants</h2>
         </div>
         <div class="grid gap-4 md:grid-cols-2">
-          <article class="rounded-xl border border-line bg-paper/80 p-5">
-            <h3 class="text-xl font-black">Port deja occupe</h3>
-            <p class="mt-3 text-ink-soft"><code>wt add</code> saute les ports deja en ecoute si <code>ss</code> est disponible. Change la plage avec <code>--port-start</code> et <code>--port-end</code> si besoin.</p>
+          <article class="rounded-lg border border-hairline bg-panel p-5 shadow-sm">
+            <h3 class="text-xl font-semibold tracking-[-0.01em]">Port déjà occupé</h3>
+            <p class="mt-3 leading-7 text-muted"><code>wt add</code> saute les ports déjà en écoute si <code>ss</code> est disponible. Change la plage avec <code>--port-start</code> et <code>--port-end</code> si besoin.</p>
           </article>
-          <article class="rounded-xl border border-line bg-paper/80 p-5">
-            <h3 class="text-xl font-black">Projet inconnu</h3>
-            <p class="mt-3 text-ink-soft">Verifie <code>devhub project list</code>. Le registre local vit dans <code>data/projects/*.env</code> et reste ignore par Git.</p>
+          <article class="rounded-lg border border-hairline bg-panel p-5 shadow-sm">
+            <h3 class="text-xl font-semibold tracking-[-0.01em]">Projet inconnu</h3>
+            <p class="mt-3 leading-7 text-muted">Vérifie <code>devhub project list</code>. Le registre local vit dans <code>data/projects/*.env</code> et reste ignoré par Git.</p>
           </article>
-          <article class="rounded-xl border border-line bg-paper/80 p-5">
-            <h3 class="text-xl font-black">Override manquant</h3>
-            <p class="mt-3 text-ink-soft">Relance <code>devhub project init ...</code> ou verifie <code>overrides/&lt;project&gt;-app.override.yml</code>.</p>
+          <article class="rounded-lg border border-hairline bg-panel p-5 shadow-sm">
+            <h3 class="text-xl font-semibold tracking-[-0.01em]">Override manquant</h3>
+            <p class="mt-3 leading-7 text-muted">Relance <code>devhub project init ...</code> ou vérifie <code>overrides/&lt;project&gt;-app.override.yml</code>.</p>
           </article>
-          <article class="rounded-xl border border-line bg-paper/80 p-5">
-            <h3 class="text-xl font-black">Pages GitHub non publiee</h3>
-            <p class="mt-3 text-ink-soft">Le site est publie par workflow GitHub Actions. Controle le dernier run Pages et l'URL Pages du repository.</p>
+          <article class="rounded-lg border border-hairline bg-panel p-5 shadow-sm">
+            <h3 class="text-xl font-semibold tracking-[-0.01em]">Pages GitHub non publiée</h3>
+            <p class="mt-3 leading-7 text-muted">Le site est publié par workflow GitHub Actions. Contrôle le dernier run Pages et l'URL Pages du repository.</p>
           </article>
         </div>
       </section>
     </main>
 
-    <footer class="border-t border-line py-8">
-      <div class="mx-auto flex w-[min(1180px,calc(100%-2rem))] flex-wrap justify-between gap-3 text-sm font-bold text-ink-soft">
+    <footer class="border-t border-hairline py-8">
+      <div class="mx-auto flex w-[min(1120px,calc(100%-2rem))] flex-wrap justify-between gap-3 text-sm text-muted">
         <span>DevHub</span>
-        <a class="text-forest" href="https://github.com/MakFly/dev-infra">GitHub</a>
-        <a class="text-forest" href="#top">Retour haut</a>
+        <a class="font-medium text-blue" href="https://github.com/MakFly/dev-infra">GitHub</a>
+        <a class="font-medium text-blue" href="#top">Retour haut</a>
       </div>
     </footer>
 

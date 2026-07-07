@@ -4,20 +4,25 @@
 @source "./script.js";
 
 @theme {
-  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --font-mono: "SFMono-Regular", ui-monospace, Consolas, "Liberation Mono", monospace;
 
-  --color-ink: oklch(18% 0.027 164);
-  --color-ink-soft: oklch(38% 0.033 170);
-  --color-paper: oklch(98% 0.008 112);
-  --color-mist: oklch(94% 0.017 145);
-  --color-line: oklch(80% 0.027 150);
-  --color-forest: oklch(31% 0.105 160);
-  --color-forest-2: oklch(24% 0.075 165);
-  --color-amber-soft: oklch(83% 0.112 78);
-  --color-copper: oklch(59% 0.13 42);
-  --color-code: oklch(18% 0.026 165);
-  --color-code-text: oklch(92% 0.02 143);
+  --color-page: oklch(97.6% 0.004 250);
+  --color-panel: oklch(99.1% 0.003 250);
+  --color-window: oklch(96.7% 0.005 250);
+  --color-soft: oklch(94.2% 0.006 250);
+  --color-hairline: oklch(86.5% 0.008 250);
+  --color-graphite: oklch(21% 0.012 255);
+  --color-muted: oklch(48% 0.018 255);
+  --color-blue: oklch(58% 0.19 255);
+  --color-blue-strong: oklch(52% 0.21 255);
+  --color-blue-soft: oklch(93.5% 0.035 255);
+  --color-code: oklch(24% 0.016 255);
+  --color-code-text: oklch(92% 0.006 255);
+  --color-console-muted: oklch(78% 0.018 255);
+  --color-red-dot: oklch(68% 0.19 27);
+  --color-yellow-dot: oklch(82% 0.14 87);
+  --color-green-dot: oklch(72% 0.16 145);
 }
 
 @layer base {
@@ -28,14 +33,17 @@
   body {
     overflow-x: hidden;
     background:
-      radial-gradient(circle at 0% 0%, oklch(84% 0.1 76 / 0.62), transparent 30rem),
-      radial-gradient(circle at 92% 8%, oklch(76% 0.09 168 / 0.38), transparent 26rem),
-      linear-gradient(135deg, oklch(98% 0.008 112), oklch(92% 0.018 153));
+      linear-gradient(180deg, oklch(99.2% 0.003 250), var(--color-page) 42rem),
+      var(--color-page);
   }
 
   ::selection {
-    color: var(--color-paper);
-    background: var(--color-forest);
+    color: var(--color-panel);
+    background: var(--color-blue);
+  }
+
+  code {
+    font-size: 0.92em;
   }
 }
 
@@ -44,17 +52,17 @@
     position: absolute;
     top: 0.7rem;
     right: 0.7rem;
-    border: 1px solid oklch(76% 0.03 150 / 0.55);
-    border-radius: 0.5rem;
-    padding: 0.38rem 0.58rem;
+    border: 1px solid oklch(44% 0.018 255);
+    border-radius: 999px;
+    padding: 0.34rem 0.62rem;
     color: var(--color-code-text);
-    background: oklch(28% 0.03 164);
+    background: oklch(31% 0.018 255);
     font-size: 0.75rem;
-    font-weight: 800;
+    font-weight: 600;
   }
 
   .copy-button:hover,
   .copy-button:focus-visible {
-    background: oklch(34% 0.05 160);
+    background: oklch(38% 0.025 255);
   }
 }
