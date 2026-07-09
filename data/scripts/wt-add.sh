@@ -29,6 +29,13 @@ ports_file="$DEVHUB_DIR/docker/$PROJECT_NAME/worktrees.ports"
 mkdir -p "$PROJECT_WORKTREES" "$(dirname "$ports_file")"
 touch "$ports_file"
 
+# Serialize registry reads/writes across concurrent wt add / wt rm calls.
+# The lock is held until the script exits.
+exec 9>"$ports_file.lock"
+if command -v flock >/dev/null 2>&1; then
+  flock 9
+fi
+
 if [ -e "$target" ]; then
   echo "Worktree path already exists: $target" >&2
   exit 1
@@ -80,6 +87,18 @@ WORKTREE_DB_PASSWORD="$WORKTREE_DB"
 # shellcheck disable=SC2034  # expanded by render_template
 WORKTREE_REDIS_PREFIX="$WORKTREE_DB"
 
+DB_PROVISIONED="no"
+if postgres_running; then
+  if "$SCRIPT_DIR/create-project-db.sh" "$WORKTREE_DB" "$WORKTREE_DB_USER" "$WORKTREE_DB_PASSWORD" >/dev/null; then
+    DB_PROVISIONED="yes"
+  else
+    echo "Warning: database provisioning failed for $WORKTREE_DB" >&2
+  fi
+else
+  echo "Postgres is not running; database not provisioned." >&2
+  echo "Run: devhub up && devhub db create $WORKTREE_DB" >&2
+fi
+
 template_dir="$DEVHUB_DIR/templates/$PROJECT_STACK"
 if [ -f "$template_dir/worktree.env.tpl" ] && [ ! -f "$target/.env" ]; then
   render_template "$template_dir/worktree.env.tpl" "$target/.env"
@@ -105,6 +124,7 @@ Branch:  $branch
 Slug:    $WORKTREE_SLUG
 Path:    $target
 URL:     http://localhost:$WORKTREE_PORT
+DB:      $WORKTREE_DB (provisioned: $DB_PROVISIONED)
 
 Next:
   devhub runtime $PROJECT_NAME

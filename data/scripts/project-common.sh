@@ -97,6 +97,11 @@ render_template() {
   done < "$source" > "$target"
 }
 
+postgres_running() {
+  command -v docker >/dev/null 2>&1 || return 1
+  docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^${POSTGRES_CONTAINER:-infra-postgres}$"
+}
+
 stack_runtime_kind() {
   case "$1" in
     symfony|laravel) echo "php" ;;

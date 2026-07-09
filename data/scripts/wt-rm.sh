@@ -22,6 +22,12 @@ wt="$(slugify "$wt")"
 ports_file="$DEVHUB_DIR/docker/$PROJECT_NAME/worktrees.ports"
 [ -f "$ports_file" ] || { echo "No worktrees registered for $PROJECT_NAME." >&2; exit 1; }
 
+# Serialize registry reads/writes across concurrent wt add / wt rm calls.
+exec 9>"$ports_file.lock"
+if command -v flock >/dev/null 2>&1; then
+  flock 9
+fi
+
 line="$(awk -F'|' -v slug="$wt" '$1 == slug { print; found=1 } END { exit found ? 0 : 1 }' "$ports_file")" || {
   echo "Unknown worktree: $wt" >&2
   exit 1
