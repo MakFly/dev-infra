@@ -41,7 +41,7 @@ Turn work into checks:
 
 ```bash
 bash -n bin/devhub data/scripts/*.sh
-COMPOSE_PROFILES=core,async,node,node22 docker compose --env-file .env.example -f compose.yml config
+COMPOSE_PROFILES=core,async,node docker compose --env-file .env.example -f compose.yml config
 ./bin/devhub help
 ```
 
@@ -57,7 +57,7 @@ developer data without explicit permission.
 - Local override convention: `overrides/<project>-app.override.yml`
 - Shared network: `dev-shared-net`
 - Default profile: `core`
-- Optional profiles: `async`, `node`, `node22`
+- Optional profiles: `async`, `node`
 
 ## Search
 

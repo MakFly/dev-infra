@@ -3,6 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEVHUB_DIR="${DEVHUB_DIR:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
+# shellcheck disable=SC2034  # shared header; render_template reads it in sibling scripts
 NETWORK_NAME="${DEVHUB_NETWORK:-dev-shared-net}"
 
 # shellcheck source=project-common.sh
@@ -20,6 +21,7 @@ fi
 printf "%-30s %-24s %s\n" "WORKTREE" "BRANCH" "URL"
 printf "%-30s %-24s %s\n" "--------" "------" "---"
 
+# shellcheck disable=SC2034  # path is part of the registry line format
 while IFS='|' read -r slug port branch path; do
   [ -n "$slug" ] || continue
   printf "%-30s %-24s http://localhost:%s\n" "$slug" "$branch" "$port"

@@ -118,6 +118,7 @@ cmd_up() {
           echo "Unknown profile: $p (allowed: $STARTABLE_PROFILES)" >&2
           exit 1
         fi
+        # shellcheck disable=SC2076  # literal substring match is intended
         if [[ ! " ${profiles[*]} " =~ " ${p} " ]]; then
           profiles+=("$p")
         fi

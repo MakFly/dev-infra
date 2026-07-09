@@ -55,7 +55,7 @@ Use the smallest useful verification set:
 
 ```bash
 bash -n bin/devhub data/scripts/*.sh
-COMPOSE_PROFILES=core,async,node,node22 docker compose --env-file .env.example -f compose.yml config
+COMPOSE_PROFILES=core,async,node docker compose --env-file .env.example -f compose.yml config
 ./bin/devhub help
 ```
 

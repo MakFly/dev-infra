@@ -3,6 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEVHUB_DIR="${DEVHUB_DIR:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
+# shellcheck disable=SC2034  # consumed by render_template via __DEVHUB_NETWORK__
 NETWORK_NAME="${DEVHUB_NETWORK:-dev-shared-net}"
 
 # shellcheck source=project-common.sh
@@ -141,8 +142,11 @@ scaffold_initial_worktree() {
   WORKTREE_SLUG="$slug"
   WORKTREE_PORT="$PROJECT_PORT_START"
   WORKTREE_DB="$(underscore_slug "${PROJECT_NAME}_${WORKTREE_SLUG}")"
+  # shellcheck disable=SC2034  # expanded by render_template
   WORKTREE_DB_USER="$WORKTREE_DB"
+  # shellcheck disable=SC2034  # expanded by render_template
   WORKTREE_DB_PASSWORD="$WORKTREE_DB"
+  # shellcheck disable=SC2034  # expanded by render_template
   WORKTREE_REDIS_PREFIX="$WORKTREE_DB"
 
   if [ -f "$template_dir/worktree.env.tpl" ]; then

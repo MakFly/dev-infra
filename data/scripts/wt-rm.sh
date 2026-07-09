@@ -3,6 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEVHUB_DIR="${DEVHUB_DIR:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
+# shellcheck disable=SC2034  # shared header; render_template reads it in sibling scripts
 NETWORK_NAME="${DEVHUB_NETWORK:-dev-shared-net}"
 
 # shellcheck source=project-common.sh
