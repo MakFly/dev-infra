@@ -217,6 +217,32 @@ overrides/<project>-app.override.yml
 These files are intentionally ignored by Git. Committed templates live in
 `templates/<stack>/`.
 
+### Machine-readable output
+
+`wt add`, `wt list`, `wt status`, `wt rm`, and `project list` accept `--json`
+and print a single JSON object (schema version `"v":1`, additive evolution
+only) on stdout, so scripts and coding agents can drive DevHub without
+parsing tables:
+
+```bash
+devhub wt add webapp feat/search --json
+{"v":1,"status":"created","project":"webapp","slug":"feat-search","port":8102,...}
+```
+
+Exit codes:
+
+| Command | Code | Meaning |
+|---|---|---|
+| `wt add` | `0` | Worktree created |
+| `wt add` | `3` | Already registered — the existing entry is re-printed with `--json` |
+| `wt add` | `4` | No free port left in the project range |
+| `wt rm` | `5` | Worktree has uncommitted or untracked changes (re-run with `--force`) |
+
+`wt add` also provisions the per-worktree PostgreSQL database and role when
+`infra-postgres` is running; the result is reported as `db_provisioned` in
+the JSON output. Concurrent `wt add`/`wt rm` calls are serialized with a
+lock on the project port registry.
+
 ## CLI Reference
 
 | Command | Description |
@@ -235,7 +261,8 @@ These files are intentionally ignored by Git. Committed templates live in
 | `devhub project show <name>` | Show a local project registry file |
 | `devhub wt add <project> <branch> [base]` | Create/register a Git worktree on the next free port |
 | `devhub wt list <project>` | List worktree URLs for a project |
-| `devhub wt rm <project> <slug>` | Remove a registered project worktree |
+| `devhub wt status <project> [slug]` | Show http/db/runtime state per worktree |
+| `devhub wt rm <project> <slug> [--force]` | Remove a registered project worktree |
 | `devhub runtime <project>` | Start a project runtime override |
 | `devhub down-runtime <project>` | Stop a project runtime |
 | `devhub doctor` | Diagnostics: health, network, ports |

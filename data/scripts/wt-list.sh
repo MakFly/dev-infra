@@ -9,10 +9,40 @@ NETWORK_NAME="${DEVHUB_NETWORK:-dev-shared-net}"
 # shellcheck source=project-common.sh
 source "$SCRIPT_DIR/project-common.sh"
 
-project="${1:-}"
+JSON_OUT=0
+positional=()
+for arg in "$@"; do
+  case "$arg" in
+    --json) JSON_OUT=1 ;;
+    *) positional+=("$arg") ;;
+  esac
+done
+
+project="${positional[0]:-}"
 load_project "$project"
 
 ports_file="$DEVHUB_DIR/docker/$PROJECT_NAME/worktrees.ports"
+
+if [ "$JSON_OUT" -eq 1 ]; then
+  printf '{"v":1,"project":%s,"worktrees":[' "$(json_str "$PROJECT_NAME")"
+  first=1
+  if [ -f "$ports_file" ]; then
+    while IFS='|' read -r slug port branch path; do
+      [ -n "$slug" ] || continue
+      [ "$first" -eq 1 ] || printf ','
+      first=0
+      printf '{"slug":%s,"port":%s,"branch":%s,"path":%s,"url":%s}' \
+        "$(json_str "$slug")" \
+        "$port" \
+        "$(json_str "$branch")" \
+        "$(json_str "$path")" \
+        "$(json_str "http://localhost:$port")"
+    done < "$ports_file"
+  fi
+  printf ']}\n'
+  exit 0
+fi
+
 if [ ! -f "$ports_file" ]; then
   echo "No worktrees registered for $PROJECT_NAME."
   exit 0

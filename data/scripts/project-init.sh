@@ -224,9 +224,36 @@ EOF
 }
 
 cmd_list() {
+  local json_out=0
+  [ "${1:-}" = "--json" ] && json_out=1
   local dir
   dir="$(project_registry_dir)"
   mkdir -p "$dir"
+
+  if [ "$json_out" -eq 1 ]; then
+    printf '{"v":1,"projects":['
+    local first=1
+    for file in "$dir"/*.env; do
+      [ -f "$file" ] || continue
+      [ "$first" -eq 1 ] || printf ','
+      first=0
+      (
+        # shellcheck source=/dev/null
+        source "$file"
+        printf '{"name":%s,"stack":%s,"root":%s,"container":%s,"base_ref":%s,"port_start":%s,"port_end":%s}' \
+          "$(json_str "$PROJECT_NAME")" \
+          "$(json_str "$PROJECT_STACK")" \
+          "$(json_str "$PROJECT_ROOT")" \
+          "$(json_str "$PROJECT_CONTAINER")" \
+          "$(json_str "$PROJECT_BASE_REF")" \
+          "$PROJECT_PORT_START" \
+          "$PROJECT_PORT_END"
+      )
+    done
+    printf ']}\n'
+    return 0
+  fi
+
   local found=0
   for file in "$dir"/*.env; do
     [ -f "$file" ] || continue
@@ -246,7 +273,7 @@ cmd_show() {
 
 case "${1:-}" in
   init) shift; cmd_init "$@" ;;
-  list) cmd_list ;;
+  list) shift; cmd_list "$@" ;;
   show) shift; cmd_show "$@" ;;
   -h|--help|help|"") usage ;;
   *) echo "Unknown project command: $1" >&2; usage; exit 1 ;;

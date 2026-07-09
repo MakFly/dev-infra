@@ -43,3 +43,13 @@ helper() {
   run helper "stack_runtime_kind rails"
   [ "$status" -ne 0 ]
 }
+
+@test "json_str wraps plain strings in quotes" {
+  run helper "json_str 'plain-value'"
+  [ "$output" = '"plain-value"' ]
+}
+
+@test "json_str escapes quotes and backslashes" {
+  run helper 'json_str "a\"b\\c"'
+  [ "$output" = '"a\"b\\c"' ]
+}

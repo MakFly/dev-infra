@@ -102,6 +102,21 @@ postgres_running() {
   docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^${POSTGRES_CONTAINER:-infra-postgres}$"
 }
 
+worktree_db_exists() {
+  docker exec "${POSTGRES_CONTAINER:-infra-postgres}" psql -U "${POSTGRES_ADMIN_USER:-test}" -d postgres -tAc \
+    "SELECT 1 FROM pg_database WHERE datname='${1}'" 2>/dev/null | grep -q 1
+}
+
+json_str() {
+  local s="$1"
+  s="${s//\\/\\\\}"
+  s="${s//\"/\\\"}"
+  s="${s//$'\n'/\\n}"
+  s="${s//$'\r'/\\r}"
+  s="${s//$'\t'/\\t}"
+  printf '"%s"' "$s"
+}
+
 stack_runtime_kind() {
   case "$1" in
     symfony|laravel) echo "php" ;;

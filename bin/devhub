@@ -22,6 +22,7 @@ PROJECT_SCRIPT="$SCRIPTS_DIR/project-init.sh"
 WT_ADD_SCRIPT="$SCRIPTS_DIR/wt-add.sh"
 WT_LIST_SCRIPT="$SCRIPTS_DIR/wt-list.sh"
 WT_RM_SCRIPT="$SCRIPTS_DIR/wt-rm.sh"
+WT_STATUS_SCRIPT="$SCRIPTS_DIR/wt-status.sh"
 NETWORK_NAME="${DEVHUB_NETWORK:-dev-shared-net}"
 DEFAULT_PROFILES=(core)
 ALL_PROFILES="core,async,node"
@@ -306,15 +307,17 @@ cmd_wt() {
   case "$sub" in
     add) "$WT_ADD_SCRIPT" "$@" ;;
     list) "$WT_LIST_SCRIPT" "$@" ;;
+    status) "$WT_STATUS_SCRIPT" "$@" ;;
     rm|remove) "$WT_RM_SCRIPT" "$@" ;;
     *)
       cat >&2 <<'EOF'
 Usage: devhub wt <command> [args]
 
 Commands:
-  add <project> <branch> [base-ref]  Create/register a worktree
-  list <project>                     List registered worktrees
-  rm <project> <worktree-slug>        Remove a worktree
+  add <project> <branch> [base-ref] [--json]   Create/register a worktree (exit 3 if already registered)
+  list <project> [--json]                      List registered worktrees
+  status <project> [slug] [--json]             Show http/db/runtime state per worktree
+  rm <project> <slug> [--json] [--force]        Remove a worktree (exit 5 if dirty)
 EOF
       exit 1
       ;;
@@ -340,7 +343,8 @@ Commands:
   project show <name>                 Show a project registry file
   wt add <project> <branch> [base]    Create/register a project worktree
   wt list <project>                   List project worktrees
-  wt rm <project> <slug>              Remove a project worktree
+  wt status <project> [slug]          Show worktree http/db/runtime status
+  wt rm <project> <slug> [--force]    Remove a project worktree
   doctor                              Show health and networking diagnostics
   runtime <project>                   Start project runtime (auto-detected from overrides/)
   down-runtime <project>             Stop project runtime
@@ -354,6 +358,10 @@ Stacks:
 
 Projects:
   Add local override files as overrides/<name>-app.override.yml.
+
+Machine output:
+  wt add/list/status/rm and project list accept --json (stable schema, "v":1).
+  Exit codes: wt add 3 = already registered, 4 = no free port; wt rm 5 = dirty worktree.
 EOF
 }
 
