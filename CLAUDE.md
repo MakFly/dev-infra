@@ -59,6 +59,33 @@ developer data without explicit permission.
 - Default profile: `core`
 - Optional profiles: `async`, `node`
 
+## Releasing
+
+Version lives in `VERSION` (single source of truth); `devhub version` prints it.
+Cut a release from a clean `main` with `make release BUMP=...` — it bumps
+`VERSION`, commits `chore(release): vX.Y.Z`, tags, and pushes; the tag triggers
+the `Release` workflow (`.github/workflows/release.yml`) that publishes the
+GitHub Release. Full docs: README "Releasing".
+
+Pick the bump from the commits shipped since the last tag:
+
+| Changes since last tag                                                   | Bump                              |
+|--------------------------------------------------------------------------|-----------------------------------|
+| Fix / docs / ci / refactor / chore only (`fix:`, `docs:`, `ci:`, …)      | `patch` (0.0.1 → 0.0.2)           |
+| New user-facing feature or command (`feat:`)                             | `patch` while < 1.0.0, else `minor` |
+| Breaking change (removed/renamed command, changed default, incompatible env/compose) | `major` / explicit jump  |
+
+Pre-1.0 rule: while the version is `0.0.x`, ship **everything as `patch`**
+(0.0.1 → 0.0.2 → … → 0.0.11 → 0.0.12). Only jump to `1.0.0` when the CLI and
+compose contract is declared stable, and do it explicitly
+(`make release BUMP=1.0.0`) — never automatically.
+
+Rules:
+- Never tag or push a release without explicit user confirmation.
+- Preview first: `./data/scripts/release.sh <bump> --dry-run`.
+- Update `CHANGELOG.md` (move `Unreleased` items under the new version) before cutting.
+- If several change types are staged, use the highest bump they imply.
+
 ## Search
 
 Use `ig` for repository search. Fall back to `rg` only if `ig --version` fails.
