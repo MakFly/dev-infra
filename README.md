@@ -204,6 +204,49 @@ hono
 fastapi-ddd
 ```
 
+### Adopt an existing project in one command
+
+`devhub project adopt` migrates an existing Git checkout into a clean worktree
+hub: it detects the stack (root or `apps/*`/`packages/*` workspace), makes a
+bare clone next to the source (`<path>-hub/repo.git`), registers the project,
+creates the `main` worktree on its own port and database, carries the untracked
+`.env`/`.env.local` files over, and generates an agent workspace at the hub
+root: `CLAUDE.md`/`AGENTS.md` (worktree rules), `.claude/agents/`
+(implementer lanes + read-only security/perf reviewers), `.claude/skills/`
+(`/orchestrate`, `/orchestrate-fast` — one implementation lane = one worktree)
+and `.claude/settings.json` (devhub command allowlist). Open an AI session at
+the hub root and it orchestrates work through `devhub wt add`.
+`devhub project init` generates the same workspace.
+
+A hub `Makefile` is generated too, with the project name baked in:
+
+```bash
+make run            # devhub runtime <project>
+make urls           # test URLs per worktree (all apps)
+make add BRANCH=feat/x
+make rm SLUG=feat-x
+make pr BRANCH=feat/x   # push + gh pr create
+```
+
+```bash
+devhub project adopt ~/projects/legacy-app
+# monorepo with several apps? adopted as-is (multi-app runtime), or pick one:
+devhub project adopt ~/projects/monorepo --stack nextjs
+```
+
+When several apps are detected (e.g. `apps/web` Next.js + `apps/api` FastAPI),
+the project is adopted in **multi-app** mode: one polyglot runtime image
+(bun + Python), one port per app per worktree, and cross-app URLs injected in
+each app's env file (`DEVHUB_<APP>_URL`, plus `API_URL`/`NEXT_PUBLIC_API_URL`
+when an app is named `api`). `wt add --json` then returns an `apps` port map.
+PHP stacks are excluded from multi-app mode (use `--stack` to pick one app).
+
+The source checkout is left untouched; uncommitted changes stay there and are
+reported at the end. Options: `--name`, `--stack`, `--root`, `--base`,
+`--dev-command`, `--port-start`, `--port-end`, `--runtime-port`.
+
+### Register a project manually
+
 Register an existing Symfony API project:
 
 ```bash
@@ -299,6 +342,7 @@ lock on the project port registry.
 | `devhub db import [args]` | Run custom import script (`data/scripts/import-db.sh` or `DEVHUB_IMPORT_SCRIPT`) |
 | `devhub db list` | List PostgreSQL databases |
 | `devhub project init <name> --stack <stack>` | Register/generate a worktree-enabled project runtime |
+| `devhub project adopt <path>` | One-shot adoption of an existing Git checkout into a worktree hub |
 | `devhub project list` | List registered local projects |
 | `devhub project show <name>` | Show a local project registry file |
 | `devhub wt add <project> <branch> [base]` | Create/register a Git worktree on the next free port |

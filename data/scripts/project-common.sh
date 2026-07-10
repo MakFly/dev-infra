@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Host user for runtime containers: files written into mounted worktrees
+# (node_modules, .venv, build output) must stay removable by the host user.
+DEVHUB_UID="${DEVHUB_UID:-$(id -u)}"
+DEVHUB_GID="${DEVHUB_GID:-$(id -g)}"
+
 slugify() {
   local value="$1"
   printf '%s' "$value" \
@@ -86,7 +91,11 @@ render_template() {
     line="${line//__PROJECT_PORT_END__/${PROJECT_PORT_END}}"
     line="${line//__PROJECT_RUNTIME_PORT__/${PROJECT_RUNTIME_PORT}}"
     line="${line//__PROJECT_DEV_COMMAND__/${safe_project_dev_command}}"
+    line="${line//__PROJECT_APPS__/${PROJECT_APPS:-}}"
+    line="${line//__PROJECT_PORTS_YAML__/${PROJECT_PORTS_YAML:-}}"
     line="${line//__DEVHUB_NETWORK__/${NETWORK_NAME}}"
+    line="${line//__DEVHUB_UID__/${DEVHUB_UID}}"
+    line="${line//__DEVHUB_GID__/${DEVHUB_GID}}"
     line="${line//__WORKTREE_SLUG__/${WORKTREE_SLUG:-}}"
     line="${line//__WORKTREE_PORT__/${WORKTREE_PORT:-}}"
     line="${line//__WORKTREE_DB__/${WORKTREE_DB:-}}"
@@ -107,6 +116,37 @@ worktree_db_exists() {
     "SELECT 1 FROM pg_database WHERE datname='${1}'" 2>/dev/null | grep -q 1
 }
 
+# Explicit compose port bindings for the runtime port plus every allocated
+# worktree/app port. Publishing the whole project range would collide with
+# unrelated host services inside it.
+override_ports_yaml() {
+  local ports_file="$1"
+  local out="      - \"127.0.0.1:${PROJECT_RUNTIME_PORT}:${PROJECT_RUNTIME_PORT}\"" port
+  if [ -f "$ports_file" ]; then
+    while IFS= read -r port; do
+      [ -n "$port" ] || continue
+      out+=$'\n'"      - \"127.0.0.1:${port}:${port}\""
+    done < <(awk -F'|' '
+      $2 != "" { print $2 }
+      $5 != "" { n = split($5, a, ","); for (i = 1; i <= n; i++) { split(a[i], kv, "="); print kv[2] } }
+    ' "$ports_file" | sort -un)
+  fi
+  printf '%s' "$out"
+}
+
+# "web=8101,api=8102" -> {"web":8101,"api":8102}
+apps_ports_json() {
+  local spec="$1" out="" pair
+  [ -n "$spec" ] || { printf '{}'; return 0; }
+  local IFS=','
+  for pair in $spec; do
+    [ -n "$pair" ] || continue
+    [ -n "$out" ] && out+=","
+    out+="$(json_str "${pair%%=*}"):${pair#*=}"
+  done
+  printf '{%s}' "$out"
+}
+
 json_str() {
   local s="$1"
   s="${s//\\/\\\\}"
@@ -122,6 +162,7 @@ stack_runtime_kind() {
     symfony|laravel) echo "php" ;;
     nextjs|tanstack-start|hono) echo "bun" ;;
     fastapi-ddd) echo "python" ;;
+    multi) echo "multi" ;;
     *)
       echo "Unknown stack: $1" >&2
       echo "Supported stacks: symfony, laravel, nextjs, tanstack-start, hono, fastapi-ddd" >&2

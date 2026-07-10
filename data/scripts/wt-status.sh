@@ -70,7 +70,7 @@ found=0
 first=1
 if [ -f "$ports_file" ]; then
   # shellcheck disable=SC2034  # branch/path are part of the registry line format
-  while IFS='|' read -r slug port branch path; do
+  while IFS='|' read -r slug port branch path app_ports; do
     [ -n "$slug" ] || continue
     if [ -n "$only_slug" ] && [ "$slug" != "$only_slug" ]; then
       continue

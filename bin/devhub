@@ -340,6 +340,7 @@ Commands:
   db import [args]                     Run custom DB import script (see DEVHUB_IMPORT_SCRIPT)
   db list                             List non-template databases
   project init <name> --stack <stack> Register a worktree-enabled project
+  project adopt <path>                One-shot adoption of an existing Git checkout
   project list                        List registered projects
   project show <name>                 Show a project registry file
   wt add <project> <branch> [base]    Create/register a project worktree
