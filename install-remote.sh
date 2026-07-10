@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_URL="https://github.com/MakFly/dev-infra.git"
-TARBALL_URL="https://github.com/MakFly/dev-infra/archive/refs/heads/main.tar.gz"
+REPO_SLUG="MakFly/dev-infra"
+REPO_URL="https://github.com/${REPO_SLUG}.git"
+# Which version to install: "latest" (newest release, default), "vX.Y.Z", or "main".
+DEVHUB_VERSION="${DEVHUB_VERSION:-latest}"
 DEVHUB_DIR="${DEVHUB_DIR:-$HOME/.local/share/devhub}"
 BIN_DIR="$HOME/.local/bin"
 ZSH_SNIPPET_DIR="$HOME/.config/devhub"
@@ -45,10 +47,45 @@ preflight() {
   info "Prerequisites OK: docker, docker compose, jq, curl"
 }
 
+# Resolve DEVHUB_VERSION into REF (git ref) + REF_KIND (tag|branch).
+resolve_ref() {
+  case "$DEVHUB_VERSION" in
+    main)
+      REF="main"; REF_KIND="branch"
+      ;;
+    latest)
+      info "Resolving latest release..."
+      local tag
+      tag="$(curl -fsSL "https://api.github.com/repos/${REPO_SLUG}/releases/latest" \
+        | jq -r '.tag_name // empty')"
+      if [ -z "$tag" ]; then
+        warn "No published release found — falling back to 'main'."
+        REF="main"; REF_KIND="branch"
+      else
+        REF="$tag"; REF_KIND="tag"
+      fi
+      ;;
+    v*)
+      REF="$DEVHUB_VERSION"; REF_KIND="tag"
+      ;;
+    *)
+      REF="v$DEVHUB_VERSION"; REF_KIND="tag"
+      ;;
+  esac
+  info "Target version: $REF"
+}
+
 download() {
   if [ -d "$DEVHUB_DIR/.git" ]; then
-    info "Updating existing installation..."
-    git -C "$DEVHUB_DIR" pull --ff-only origin main
+    info "Updating existing installation to $REF..."
+    if [ "$REF_KIND" = "branch" ]; then
+      git -C "$DEVHUB_DIR" fetch origin "$REF"
+      git -C "$DEVHUB_DIR" checkout -q "$REF"
+      git -C "$DEVHUB_DIR" pull --ff-only origin "$REF"
+    else
+      git -C "$DEVHUB_DIR" fetch --tags origin
+      git -C "$DEVHUB_DIR" checkout -q "tags/$REF"
+    fi
     return
   fi
 
@@ -59,12 +96,18 @@ download() {
   fi
 
   if command -v git >/dev/null 2>&1; then
-    info "Cloning via git..."
-    git clone --depth 1 "$REPO_URL" "$DEVHUB_DIR"
+    info "Cloning $REF via git..."
+    git clone --depth 1 --branch "$REF" "$REPO_URL" "$DEVHUB_DIR"
   else
     info "git not found — downloading tarball..."
     mkdir -p "$DEVHUB_DIR"
-    curl -fsSL "$TARBALL_URL" | tar xz --strip-components=1 -C "$DEVHUB_DIR"
+    local tarball_url
+    if [ "$REF_KIND" = "branch" ]; then
+      tarball_url="https://github.com/${REPO_SLUG}/archive/refs/heads/${REF}.tar.gz"
+    else
+      tarball_url="https://github.com/${REPO_SLUG}/archive/refs/tags/${REF}.tar.gz"
+    fi
+    curl -fsSL "$tarball_url" | tar xz --strip-components=1 -C "$DEVHUB_DIR"
   fi
 }
 
@@ -99,6 +142,7 @@ summary() {
   echo ""
   printf "${BOLD}DevHub installed${RESET}\n"
   echo ""
+  dim "  Version    ${REF:-$DEVHUB_VERSION}"
   dim "  Directory  $DEVHUB_DIR"
   dim "  CLI        $BIN_DIR/devhub"
   dim "  Aliases    $ZSH_SNIPPET_FILE"
@@ -119,6 +163,7 @@ main() {
   echo ""
 
   preflight
+  resolve_ref
   download
   install_cli
   summary

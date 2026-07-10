@@ -17,6 +17,7 @@ DEVHUB_DIR_DEFAULT="$(cd "$SCRIPT_DIR/.." && pwd)"
 DEVHUB_DIR="${DEVHUB_DIR:-$DEVHUB_DIR_DEFAULT}"
 COMPOSE_FILE="$DEVHUB_DIR/compose.yml"
 ENV_FILE="$DEVHUB_DIR/.env"
+VERSION_FILE="$DEVHUB_DIR/VERSION"
 SCRIPTS_DIR="$DEVHUB_DIR/data/scripts"
 PROJECT_SCRIPT="$SCRIPTS_DIR/project-init.sh"
 WT_ADD_SCRIPT="$SCRIPTS_DIR/wt-add.sh"
@@ -348,6 +349,7 @@ Commands:
   doctor                              Show health and networking diagnostics
   runtime <project>                   Start project runtime (auto-detected from overrides/)
   down-runtime <project>             Stop project runtime
+  version                             Show the installed DevHub version
   help                                Show this help
 
 Profiles:
@@ -365,6 +367,15 @@ Machine output:
 EOF
 }
 
+cmd_version() {
+  if [ -f "$VERSION_FILE" ]; then
+    tr -d '[:space:]' < "$VERSION_FILE"
+    echo
+  else
+    echo "unknown"
+  fi
+}
+
 main() {
   local cmd="${1:-help}"
   shift || true
@@ -372,6 +383,10 @@ main() {
   case "$cmd" in
     help|-h|--help)
       cmd_help
+      exit 0
+      ;;
+    version|--version|-v)
+      cmd_version
       exit 0
       ;;
     up|down|restart|ps|logs|open|db|doctor|runtime|down-runtime|project|wt) ;;

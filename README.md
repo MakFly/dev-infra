@@ -40,6 +40,7 @@ Full documentation: [makfly.github.io/dev-infra](https://makfly.github.io/dev-in
 - [Connecting External Projects](#connecting-external-projects)
 - [Configuration](#configuration)
 - [Troubleshooting](#troubleshooting)
+- [Releasing](#releasing)
 - [Security](#security)
 - [License](#license)
 
@@ -134,11 +135,24 @@ devhub up --with async     # core + RabbitMQ
 
 ## Installation
 
-**One-liner** (installs to `~/.local/share/devhub`, no sudo):
+**One-liner** (installs the latest release to `~/.local/share/devhub`, no sudo):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/MakFly/dev-infra/main/install-remote.sh | bash
 ```
+
+Pin a specific version, or track the bleeding-edge `main` branch:
+
+```bash
+# exact release
+DEVHUB_VERSION=v0.0.1 curl -fsSL https://raw.githubusercontent.com/MakFly/dev-infra/main/install-remote.sh | bash
+
+# always-latest development branch (unpinned, not reproducible)
+DEVHUB_VERSION=main  curl -fsSL https://raw.githubusercontent.com/MakFly/dev-infra/main/install-remote.sh | bash
+```
+
+`DEVHUB_VERSION` defaults to `latest` (newest published GitHub Release). If no
+release exists yet, the installer falls back to `main` with a warning.
 
 Custom install path:
 
@@ -413,6 +427,29 @@ devhub logs postgres   # follow a single service
 - **Network missing** — `devhub up`, `devhub db create`, and `devhub doctor`
   auto-create `dev-shared-net`.
 - **Port conflict** — edit `.env` and change the matching `*_PORT` variable.
+
+## Releasing
+
+DevHub follows [Semantic Versioning](https://semver.org/). The `VERSION` file at
+the repo root is the single source of truth; `devhub version` prints it.
+
+Cut a release from a clean `main`:
+
+```bash
+make release              # patch bump: 0.0.1 -> 0.0.2 (default)
+make release BUMP=minor   # 0.0.x -> 0.1.0
+make release BUMP=major   # 0.x.y -> 1.0.0
+make release BUMP=1.0.0   # explicit version
+
+# preview without touching anything
+./data/scripts/release.sh patch --dry-run
+```
+
+The script bumps `VERSION`, commits `chore(release): vX.Y.Z`, creates an
+annotated `vX.Y.Z` tag, and (after confirmation) pushes. Pushing the tag triggers
+the `Release` workflow, which verifies the tag matches `VERSION`, builds a
+tarball, and publishes the GitHub Release with auto-generated notes. Document
+user-facing changes in `CHANGELOG.md`.
 
 ## Security
 

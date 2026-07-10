@@ -1,6 +1,7 @@
-.PHONY: help install uninstall up up-async down restart ps logs doctor db-create db-list runtime down-runtime project-list wt-list
+.PHONY: help install uninstall up up-async down restart ps logs doctor db-create db-list runtime down-runtime project-list wt-list version release
 
 DEVHUB := ./bin/devhub
+BUMP ?= patch
 
 help:
 	@echo "Targets:"
@@ -15,6 +16,8 @@ help:
 	@echo "  make down-runtime PROJECT=x  Stop project runtime"
 	@echo "  make project-list         List registered projects"
 	@echo "  make wt-list PROJECT=x    List project worktrees"
+	@echo "  make version              Show installed version"
+	@echo "  make release BUMP=patch   Cut a release (patch|minor|major|X.Y.Z)"
 
 install:
 	@./data/scripts/install.sh
@@ -63,3 +66,9 @@ project-list:
 wt-list:
 	@test -n "$(PROJECT)" || { echo "Usage: make wt-list PROJECT=<name>"; exit 1; }
 	@$(DEVHUB) wt list $(PROJECT)
+
+version:
+	@$(DEVHUB) version
+
+release:
+	@./data/scripts/release.sh $(BUMP)
