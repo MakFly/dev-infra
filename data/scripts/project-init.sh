@@ -265,7 +265,8 @@ cmd_adopt() {
   "$SCRIPT_DIR/wt-add.sh" "$adopt_name" "$adopt_base"
 
   # Bring untracked env files over, keeping DevHub-rendered values first.
-  local wt="$PROJECT_WORKTREES/$(slugify "$adopt_base")"
+  local wt
+  wt="$PROJECT_WORKTREES/$(slugify "$adopt_base")"
   local env_name
   for env_name in .env .env.local; do
     merge_env_file "$source/$env_name" "$wt/$env_name"
@@ -375,6 +376,7 @@ render_runtime() {
     fi
   done < <(find "$template_dir" -type f | sort)
 
+  # shellcheck disable=SC2034  # consumed by render_template via __PROJECT_PORTS_YAML__
   PROJECT_PORTS_YAML="$(override_ports_yaml "$docker_dir/worktrees.ports")"
   render_template "$template_dir/override.yml.tpl" "$DEVHUB_DIR/overrides/$PROJECT_NAME-app.override.yml"
 }

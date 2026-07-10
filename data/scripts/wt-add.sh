@@ -259,6 +259,7 @@ fi
 if [ -n "$PROJECT_APPS" ]; then
   # Multi runtimes publish only allocated ports: re-render the override so the
   # new worktree's ports are bound.
+  # shellcheck disable=SC2034  # consumed by render_template via __PROJECT_PORTS_YAML__
   PROJECT_PORTS_YAML="$(override_ports_yaml "$ports_file")"
   render_template "$DEVHUB_DIR/templates/$PROJECT_STACK/override.yml.tpl" "$DEVHUB_DIR/overrides/$PROJECT_NAME-app.override.yml"
 fi
