@@ -1,12 +1,22 @@
 # DevHub
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+![Docker Compose](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+![Bash](https://img.shields.io/badge/Shell-Bash-4EAA25?logo=gnubash&logoColor=white)
+[![Docs](https://img.shields.io/badge/docs-makfly.github.io%2Fdev--infra-blueviolet)](https://makfly.github.io/dev-infra/)
+
 **Local Docker development infrastructure with shared PostgreSQL, Redis,
 Meilisearch, Mailpit, RabbitMQ, and Git worktree runtimes for Symfony, Laravel,
 Next.js, TanStack Start, Hono, and FastAPI DDD projects.**
 
-SEO description: DevHub is a local Docker Compose development hub for running
-shared infrastructure services and one-port-per-worktree project runtimes across
-PHP, JavaScript, TypeScript, and Python applications.
+DevHub is a local Docker Compose development hub for running shared
+infrastructure services — PostgreSQL, MySQL, Redis, Meilisearch, Mailpit,
+RabbitMQ — and one-port-per-Git-worktree project runtimes across PHP,
+JavaScript, TypeScript, and Python applications. It replaces per-project
+`docker-compose.yml` duplication with a single Bash CLI (`devhub`) that
+manages shared dev infrastructure, Symfony/Laravel/Next.js/TanStack
+Start/Hono/FastAPI project registration, and isolated Git worktree runtimes
+on their own localhost ports.
 
 DevHub is a Docker Compose development stack controlled by a single Bash CLI.
 Instead of defining database, cache, mail, search, and queue services in every
@@ -14,6 +24,24 @@ project, you start them once with `devhub up` and connect any application throug
 a shared Docker network.
 
 Full documentation: [makfly.github.io/dev-infra](https://makfly.github.io/dev-infra/)
+
+## Table of Contents
+
+- [Why DevHub](#why-devhub)
+- [Services](#services)
+- [Profiles](#profiles)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Worktree Projects](#worktree-projects)
+- [CLI Reference](#cli-reference)
+- [Database Management](#database-management)
+- [Project Runtime Overrides](#project-runtime-overrides)
+- [Connecting External Projects](#connecting-external-projects)
+- [Configuration](#configuration)
+- [Troubleshooting](#troubleshooting)
+- [Security](#security)
+- [License](#license)
 
 Documentation sources live in `docs/` and use Tailwind CSS. Rebuild the
 compiled stylesheet with:
