@@ -41,8 +41,19 @@ EOF
 wt_add() { "$REPO/data/scripts/wt-add.sh" "$@" 2>/dev/null; }
 wt_list() { "$REPO/data/scripts/wt-list.sh" "$@" 2>/dev/null; }
 wt_status() { "$REPO/data/scripts/wt-status.sh" "$@" 2>/dev/null; }
+wt_conflicts() { "$REPO/data/scripts/wt-conflicts.sh" "$@" 2>/dev/null; }
 wt_rm() { "$REPO/data/scripts/wt-rm.sh" "$@" 2>/dev/null; }
 project() { "$REPO/data/scripts/project-init.sh" "$@" 2>/dev/null; }
+
+# Commit a lane's work. The generated .env.local is dropped first: real stack
+# templates gitignore it, but the bare test repo does not, so it would show up
+# as an untracked change in every lane and pollute the oracle.
+lane_commit() {
+  local dir="$1"
+  rm -f "$dir/.env" "$dir/.env.local"
+  git -C "$dir" -c user.name=devhub -c user.email=devhub@local add -A
+  git -C "$dir" -c user.name=devhub -c user.email=devhub@local commit -qm work
+}
 
 @test "wt add creates worktree, allocates port, renders env, registers it" {
   run wt_add demo feat/x --json
@@ -116,6 +127,52 @@ project() { "$REPO/data/scripts/project-init.sh" "$@" 2>/dev/null; }
   run wt_rm demo feat-x --json --force
   [ "$status" -eq 0 ]
   [ ! -d "$PROJECT_DIR/worktrees/feat-x" ]
+}
+
+@test "wt add --group/--owns are stored and surfaced; wt list --group filters" {
+  wt_add demo feat/a --group notif --owns 'src/**,lib/**' --json >/dev/null
+  wt_add demo feat/b --json >/dev/null
+  run wt_list demo --json
+  [ "$status" -eq 0 ]
+  [ "$(echo "$output" | jq -r '.worktrees[] | select(.slug=="feat-a") | .group')" = "notif" ]
+  [ "$(echo "$output" | jq -r '.worktrees[] | select(.slug=="feat-a") | .owns[1]')" = "lib/**" ]
+  [ "$(echo "$output" | jq -r '.worktrees[] | select(.slug=="feat-b") | .group')" = "" ]
+  run wt_list demo --group notif --json
+  [ "$(echo "$output" | jq '.worktrees | length')" = "1" ]
+  [ "$(echo "$output" | jq -r '.worktrees[0].slug')" = "feat-a" ]
+}
+
+@test "wt conflicts flags overlap and out-of-scope changes, exit 6" {
+  wt_add demo feat/a --group m --owns 'src/**' --json >/dev/null
+  wt_add demo feat/b --group m --owns 'src/**' --json >/dev/null
+  wa="$PROJECT_DIR/worktrees/feat-a"
+  wb="$PROJECT_DIR/worktrees/feat-b"
+  mkdir -p "$wa/src" "$wb/src"
+  echo a > "$wa/src/shared.ts"   # both lanes touch this -> overlap
+  echo a > "$wa/docs.md"         # outside src/** -> out of scope for feat-a
+  echo b > "$wb/src/shared.ts"
+  lane_commit "$wa"
+  lane_commit "$wb"
+  run wt_conflicts demo --group m --json
+  [ "$status" -eq 6 ]
+  [ "$(echo "$output" | jq -r .conflict)" = "true" ]
+  echo "$output" | jq -e '[.overlaps[].files[]] | index("src/shared.ts")'
+  echo "$output" | jq -e '.worktrees[] | select(.slug=="feat-a") | .out_of_scope | index("docs.md")'
+}
+
+@test "wt conflicts returns 0 when lanes are disjoint" {
+  wt_add demo feat/a --group m --owns 'a/**' --json >/dev/null
+  wt_add demo feat/b --group m --owns 'b/**' --json >/dev/null
+  wa="$PROJECT_DIR/worktrees/feat-a"
+  wb="$PROJECT_DIR/worktrees/feat-b"
+  mkdir -p "$wa/a" "$wb/b"
+  echo x > "$wa/a/f.ts"
+  echo y > "$wb/b/g.ts"
+  lane_commit "$wa"
+  lane_commit "$wb"
+  run wt_conflicts demo --group m --json
+  [ "$status" -eq 0 ]
+  [ "$(echo "$output" | jq -r .conflict)" = "false" ]
 }
 
 @test "project list --json returns registered projects" {

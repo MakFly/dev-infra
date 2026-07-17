@@ -10,19 +10,33 @@ NETWORK_NAME="${DEVHUB_NETWORK:-dev-shared-net}"
 source "$SCRIPT_DIR/project-common.sh"
 
 usage() {
-  echo "Usage: devhub wt add <project> <branch> [base-ref] [--json]" >&2
+  echo "Usage: devhub wt add <project> <branch> [base-ref] [--group <slug>] [--owns <glob[,glob]>] [--json]" >&2
   echo "Exit codes: 0 created, 3 already registered, 4 no free port" >&2
 }
 
 JSON_OUT=0
+GROUP=""
+OWNS=""
 positional=()
-for arg in "$@"; do
-  case "$arg" in
+while [ $# -gt 0 ]; do
+  case "$1" in
     --json) JSON_OUT=1 ;;
+    --group) GROUP="${2:-}"; shift ;;
+    --group=*) GROUP="${1#*=}" ;;
+    --owns) OWNS="${2:-}"; shift ;;
+    --owns=*) OWNS="${1#*=}" ;;
     -h|--help) usage; exit 0 ;;
-    *) positional+=("$arg") ;;
+    *) positional+=("$1") ;;
   esac
+  shift
 done
+
+# group/owns share the registry line: forbid the field separators so a value
+# can never shift a column and corrupt the positional format.
+GROUP="$(slugify "$GROUP")"
+case "$OWNS" in
+  *"|"*) echo "Invalid --owns: '|' is not allowed (registry separator)" >&2; exit 1 ;;
+esac
 
 project="${positional[0]:-}"
 branch="${positional[1]:-}"
@@ -72,7 +86,7 @@ print_worktree_json() {
   local state="$1" port="$2" provisioned="$3"
   local apps_json=""
   [ -n "$APP_PORTS" ] && apps_json=",\"apps\":$(apps_ports_json "$APP_PORTS")"
-  printf '{"v":1,"status":%s,"project":%s,"slug":%s,"branch":%s,"path":%s,"port":%s,"url":%s,"db":%s,"db_user":%s,"redis_prefix":%s,"env_path":%s,"container":%s,"db_provisioned":%s%s}\n' \
+  printf '{"v":1,"status":%s,"project":%s,"slug":%s,"branch":%s,"path":%s,"port":%s,"url":%s,"db":%s,"db_user":%s,"redis_prefix":%s,"env_path":%s,"container":%s,"group":%s,"owns":%s,"db_provisioned":%s%s}\n' \
     "$(json_str "$state")" \
     "$(json_str "$PROJECT_NAME")" \
     "$(json_str "$WORKTREE_SLUG")" \
@@ -85,6 +99,8 @@ print_worktree_json() {
     "$(json_str "$WORKTREE_REDIS_PREFIX")" \
     "$(json_str "$(worktree_env_file "$target")")" \
     "$(json_str "$PROJECT_CONTAINER")" \
+    "$(json_str "$GROUP")" \
+    "$(csv_json_array "$OWNS")" \
     "$provisioned" \
     "$apps_json"
 }
@@ -95,6 +111,9 @@ existing_line="$(awk -F'|' -v slug="$WORKTREE_SLUG" '$1 == slug { print; exit }'
 if [ -n "$existing_line" ]; then
   existing_port="$(printf '%s' "$existing_line" | awk -F'|' '{ print $2 }')"
   APP_PORTS="$(printf '%s' "$existing_line" | awk -F'|' '{ print $5 }')"
+  # Report the registered group/owns, not the (ignored) flags of this re-run.
+  GROUP="$(printf '%s' "$existing_line" | awk -F'|' '{ print $6 }')"
+  OWNS="$(printf '%s' "$existing_line" | awk -F'|' '{ print $7 }')"
   if [ "$JSON_OUT" -eq 1 ]; then
     provisioned=false
     if postgres_running && worktree_db_exists "$WORKTREE_DB"; then
@@ -250,11 +269,11 @@ if [ -f "$template_dir/site.caddy.tpl" ]; then
   render_template "$template_dir/site.caddy.tpl" "$DEVHUB_DIR/docker/$PROJECT_NAME/sites/$WORKTREE_SLUG.caddy"
 fi
 
-if [ -n "$APP_PORTS" ]; then
-  printf '%s|%s|%s|%s|%s\n' "$WORKTREE_SLUG" "$WORKTREE_PORT" "$branch" "$target" "$APP_PORTS" >> "$ports_file"
-else
-  printf '%s|%s|%s|%s\n' "$WORKTREE_SLUG" "$WORKTREE_PORT" "$branch" "$target" >> "$ports_file"
-fi
+# Fixed 7-column format: slug|port|branch|path|app_ports|group|owns.
+# Trailing columns may be empty; readers must consume all seven so an app_ports
+# value never absorbs the group/owns columns.
+printf '%s|%s|%s|%s|%s|%s|%s\n' \
+  "$WORKTREE_SLUG" "$WORKTREE_PORT" "$branch" "$target" "$APP_PORTS" "$GROUP" "$OWNS" >> "$ports_file"
 
 if [ -n "$PROJECT_APPS" ]; then
   # Multi runtimes publish only allocated ports: re-render the override so the
@@ -289,7 +308,9 @@ Branch:  $branch
 Slug:    $WORKTREE_SLUG
 Path:    $target
 URL:     http://localhost:$WORKTREE_PORT${APP_PORTS:+
-Apps:    $APP_PORTS}
+Apps:    $APP_PORTS}${GROUP:+
+Group:   $GROUP}${OWNS:+
+Owns:    $OWNS}
 DB:      $WORKTREE_DB (provisioned: $provisioned_label)
 
 Next:

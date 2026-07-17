@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.3] - 2026-07-18
+
+### Added
+- Mission lanes on top of worktrees, kept as derived state (no separate
+  manifest): `devhub wt add` gains `--group <slug>` (tag lanes of one mission)
+  and `--owns <glob[,glob]>` (declare a lane's file fence). `wt list` gains
+  `--group` filtering and exposes `group`/`owns` in `--json`.
+- `devhub wt conflicts <project> [--group <slug>] [--against <ref>] [--json]`:
+  read-only, stateless conflict oracle. For each lane it diffs changed files
+  against a base ref and reports overlaps (same file touched by two lanes),
+  out-of-scope changes (outside the lane's `--owns` fence), and migrations
+  touched by more than one lane. Exit `6` when conflicts are detected.
+
+### Changed
+- Worktree registry lines are now a fixed 7-column format
+  (`slug|port|branch|path|app_ports|group|owns`); existing 4/5-column entries
+  remain readable (missing columns are treated as empty).
+
 ## [0.0.2] - 2026-07-10
 
 ### Added
@@ -44,6 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Versioned release system: `VERSION` source of truth, `devhub version` command,
   `data/scripts/release.sh`, and the `Release` GitHub Actions workflow.
 
-[Unreleased]: https://github.com/MakFly/dev-infra/compare/v0.0.2...HEAD
+[Unreleased]: https://github.com/MakFly/dev-infra/compare/v0.0.3...HEAD
+[0.0.3]: https://github.com/MakFly/dev-infra/compare/v0.0.2...v0.0.3
 [0.0.2]: https://github.com/MakFly/dev-infra/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/MakFly/dev-infra/releases/tag/v0.0.1

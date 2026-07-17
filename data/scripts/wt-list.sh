@@ -10,16 +10,21 @@ NETWORK_NAME="${DEVHUB_NETWORK:-dev-shared-net}"
 source "$SCRIPT_DIR/project-common.sh"
 
 JSON_OUT=0
+GROUP=""
 positional=()
-for arg in "$@"; do
-  case "$arg" in
+while [ $# -gt 0 ]; do
+  case "$1" in
     --json) JSON_OUT=1 ;;
-    *) positional+=("$arg") ;;
+    --group) GROUP="${2:-}"; shift ;;
+    --group=*) GROUP="${1#*=}" ;;
+    *) positional+=("$1") ;;
   esac
+  shift
 done
 
 project="${positional[0]:-}"
 load_project "$project"
+[ -z "$GROUP" ] || GROUP="$(slugify "$GROUP")"
 
 ports_file="$DEVHUB_DIR/docker/$PROJECT_NAME/worktrees.ports"
 
@@ -27,18 +32,21 @@ if [ "$JSON_OUT" -eq 1 ]; then
   printf '{"v":1,"project":%s,"worktrees":[' "$(json_str "$PROJECT_NAME")"
   first=1
   if [ -f "$ports_file" ]; then
-    while IFS='|' read -r slug port branch path app_ports; do
+    while IFS='|' read -r slug port branch path app_ports group owns; do
       [ -n "$slug" ] || continue
+      [ -z "$GROUP" ] || [ "$group" = "$GROUP" ] || continue
       [ "$first" -eq 1 ] || printf ','
       first=0
       apps_json=""
       [ -n "$app_ports" ] && apps_json=",\"apps\":$(apps_ports_json "$app_ports")"
-      printf '{"slug":%s,"port":%s,"branch":%s,"path":%s,"url":%s%s}' \
+      printf '{"slug":%s,"port":%s,"branch":%s,"path":%s,"url":%s,"group":%s,"owns":%s%s}' \
         "$(json_str "$slug")" \
         "$port" \
         "$(json_str "$branch")" \
         "$(json_str "$path")" \
         "$(json_str "http://localhost:$port")" \
+        "$(json_str "$group")" \
+        "$(csv_json_array "$owns")" \
         "$apps_json"
     done < "$ports_file"
   fi
@@ -51,11 +59,12 @@ if [ ! -f "$ports_file" ]; then
   exit 0
 fi
 
-printf "%-30s %-24s %s\n" "WORKTREE" "BRANCH" "URL"
-printf "%-30s %-24s %s\n" "--------" "------" "---"
+printf "%-30s %-24s %-12s %s\n" "WORKTREE" "BRANCH" "GROUP" "URL"
+printf "%-30s %-24s %-12s %s\n" "--------" "------" "-----" "---"
 
-# shellcheck disable=SC2034  # path is part of the registry line format
-while IFS='|' read -r slug port branch path app_ports; do
+# shellcheck disable=SC2034  # path/owns are part of the registry line format
+while IFS='|' read -r slug port branch path app_ports group owns; do
   [ -n "$slug" ] || continue
-  printf "%-30s %-24s http://localhost:%s %s\n" "$slug" "$branch" "$port" "${app_ports:+($app_ports)}"
+  [ -z "$GROUP" ] || [ "$group" = "$GROUP" ] || continue
+  printf "%-30s %-24s %-12s http://localhost:%s %s\n" "$slug" "$branch" "${group:--}" "$port" "${app_ports:+($app_ports)}"
 done < "$ports_file"

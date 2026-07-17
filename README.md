@@ -5,9 +5,9 @@
 ![Bash](https://img.shields.io/badge/Shell-Bash-4EAA25?logo=gnubash&logoColor=white)
 [![Docs](https://img.shields.io/badge/docs-makfly.github.io%2Fdev--infra-blueviolet)](https://makfly.github.io/dev-infra/)
 
-**Local Docker development infrastructure with shared PostgreSQL, Redis,
-Meilisearch, Mailpit, RabbitMQ, and Git worktree runtimes for Symfony, Laravel,
-Next.js, TanStack Start, Hono, and FastAPI DDD projects.**
+**Local Docker development infrastructure and agentic Git worktree workflows,
+with shared PostgreSQL, Redis, Meilisearch, Mailpit, RabbitMQ, and isolated
+runtimes for Symfony, Laravel, Next.js, TanStack Start, Hono, and FastAPI DDD.**
 
 DevHub is a local Docker Compose development hub for running shared
 infrastructure services — PostgreSQL, MySQL, Redis, Meilisearch, Mailpit,
@@ -17,6 +17,10 @@ JavaScript, TypeScript, and Python applications. It replaces per-project
 manages shared dev infrastructure, Symfony/Laravel/Next.js/TanStack
 Start/Hono/FastAPI project registration, and isolated Git worktree runtimes
 on their own localhost ports.
+
+It can also initialize an agentic worktree hub for a new or existing codebase:
+generated `CLAUDE.md`/`AGENTS.md` instructions, implementation and review agents,
+orchestration skills, and one isolated Git worktree per implementation lane.
 
 DevHub is a Docker Compose development stack controlled by a single Bash CLI.
 Instead of defining database, cache, mail, search, and queue services in every
@@ -33,7 +37,7 @@ Full documentation: [makfly.github.io/dev-infra](https://makfly.github.io/dev-in
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
-- [Worktree Projects](#worktree-projects)
+- [Agentic Worktree Workflows](#agentic-worktree-workflows)
 - [CLI Reference](#cli-reference)
 - [Database Management](#database-management)
 - [Project Runtime Overrides](#project-runtime-overrides)
@@ -96,6 +100,8 @@ files. Runtime containers use the shared Docker network to reach DevHub services
   RabbitMQ and Node.js are opt-in.
 - **Project runtimes** — Compose override files let each project add its own
   containers (workers, apps) that join the shared network.
+- **Agentic worktree hubs** — initialize a generated agent workspace where each
+  implementation lane works in its own branch, worktree, port, and database.
 - **Built-in tooling** — database creation, health diagnostics, log tailing, and
   browser shortcuts from the CLI.
 
@@ -188,10 +194,17 @@ devhub open adminer     # open Adminer in browser
 devhub db create myapp  # create a PostgreSQL database + role
 ```
 
-## Worktree Projects
+## Agentic Worktree Workflows
 
-DevHub can register a project once, generate its local runtime override, then
-serve each Git worktree on its own localhost port.
+Yes: DevHub can initialize a complete agentic worktree workflow. It registers a
+project once, generates the local runtime and agent workspace, then gives every
+implementation lane its own Git worktree, localhost port, and database context.
+
+Use `devhub project adopt <path>` for an existing checkout, or
+`devhub project init <name> --stack <stack>` for a new or manually registered
+project. Both commands generate the agent workspace at the hub root; open your
+AI coding session there so orchestration can create and manage lanes through
+`devhub wt add`.
 
 Supported stacks:
 
@@ -304,10 +317,10 @@ These files are intentionally ignored by Git. Committed templates live in
 
 ### Machine-readable output
 
-`wt add`, `wt list`, `wt status`, `wt rm`, and `project list` accept `--json`
-and print a single JSON object (schema version `"v":1`, additive evolution
-only) on stdout, so scripts and coding agents can drive DevHub without
-parsing tables:
+`wt add`, `wt list`, `wt status`, `wt conflicts`, `wt rm`, and `project list`
+accept `--json` and print a single JSON object (schema version `"v":1`,
+additive evolution only) on stdout, so scripts and coding agents can drive
+DevHub without parsing tables:
 
 ```bash
 devhub wt add webapp feat/search --json
@@ -322,6 +335,7 @@ Exit codes:
 | `wt add` | `3` | Already registered — the existing entry is re-printed with `--json` |
 | `wt add` | `4` | No free port left in the project range |
 | `wt rm` | `5` | Worktree has uncommitted or untracked changes (re-run with `--force`) |
+| `wt conflicts` | `6` | Two lanes changed the same file, a lane changed outside its `--owns` fence, or migrations were touched by more than one lane |
 
 `wt add` also provisions the per-worktree PostgreSQL database and role when
 `infra-postgres` is running; the result is reported as `db_provisioned` in
@@ -345,9 +359,10 @@ lock on the project port registry.
 | `devhub project adopt <path>` | One-shot adoption of an existing Git checkout into a worktree hub |
 | `devhub project list` | List registered local projects |
 | `devhub project show <name>` | Show a local project registry file |
-| `devhub wt add <project> <branch> [base]` | Create/register a Git worktree on the next free port |
-| `devhub wt list <project>` | List worktree URLs for a project |
+| `devhub wt add <project> <branch> [base] [--group <slug>] [--owns <glob>]` | Create/register a Git worktree on the next free port; tag it to a mission group and declare its file fence |
+| `devhub wt list <project> [--group <slug>]` | List worktree URLs for a project, optionally filtered by mission group |
 | `devhub wt status <project> [slug]` | Show http/db/runtime state per worktree |
+| `devhub wt conflicts <project> [--group <slug>] [--against <ref>]` | Report lanes that changed the same files, left their `--owns` fence, or clash on migrations |
 | `devhub wt rm <project> <slug> [--force]` | Remove a registered project worktree |
 | `devhub runtime <project>` | Start a project runtime override |
 | `devhub down-runtime <project>` | Stop a project runtime |

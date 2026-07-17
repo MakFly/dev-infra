@@ -134,6 +134,21 @@ override_ports_yaml() {
   printf '%s' "$out"
 }
 
+# "apps/pwa/**,apps/web/**" -> ["apps/pwa/**","apps/web/**"] (empty -> [])
+# read -ra splits on IFS without pathname expansion, so glob values like
+# "apps/api/**" stay literal instead of matching files in the cwd.
+csv_json_array() {
+  local spec="$1" out="" item
+  local -a items
+  IFS=',' read -ra items <<< "$spec"
+  for item in "${items[@]}"; do
+    [ -n "$item" ] || continue
+    [ -n "$out" ] && out+=","
+    out+="$(json_str "$item")"
+  done
+  printf '[%s]' "$out"
+}
+
 # "web=8101,api=8102" -> {"web":8101,"api":8102}
 apps_ports_json() {
   local spec="$1" out="" pair

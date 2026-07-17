@@ -97,8 +97,8 @@ project() { "$REPO/data/scripts/project-init.sh" "$@"; }
   # registry: multi stack + apps map (primary web first; %q escapes the comma)
   grep -q "PROJECT_STACK=multi" "$DEVHUB_DIR/data/projects/mono2.env"
   grep -qF 'web=apps/web=nextjs\,api=apps/api=fastapi-ddd' "$DEVHUB_DIR/data/projects/mono2.env"
-  # ports file: primary port + per-app map in field 5
-  grep -q "^main|18106|main|.*|web=18106,api=18107$" "$DEVHUB_DIR/docker/mono2/worktrees.ports"
+  # ports file: primary port + per-app map in field 5, empty group/owns in 6/7
+  grep -q "^main|18106|main|.*|web=18106,api=18107||$" "$DEVHUB_DIR/docker/mono2/worktrees.ports"
   # each app got its own env, with its own port and cross-app wiring
   grep -q "NEXT_PUBLIC_APP_URL=http://localhost:18106" "$HUB/worktrees/main/apps/web/.env.local"
   grep -q "NEXT_PUBLIC_API_URL=http://localhost:18107" "$HUB/worktrees/main/apps/web/.env.local"

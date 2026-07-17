@@ -24,6 +24,7 @@ WT_ADD_SCRIPT="$SCRIPTS_DIR/wt-add.sh"
 WT_LIST_SCRIPT="$SCRIPTS_DIR/wt-list.sh"
 WT_RM_SCRIPT="$SCRIPTS_DIR/wt-rm.sh"
 WT_STATUS_SCRIPT="$SCRIPTS_DIR/wt-status.sh"
+WT_CONFLICTS_SCRIPT="$SCRIPTS_DIR/wt-conflicts.sh"
 NETWORK_NAME="${DEVHUB_NETWORK:-dev-shared-net}"
 DEFAULT_PROFILES=(core)
 ALL_PROFILES="core,async,node"
@@ -309,15 +310,19 @@ cmd_wt() {
     add) "$WT_ADD_SCRIPT" "$@" ;;
     list) "$WT_LIST_SCRIPT" "$@" ;;
     status) "$WT_STATUS_SCRIPT" "$@" ;;
+    conflicts) "$WT_CONFLICTS_SCRIPT" "$@" ;;
     rm|remove) "$WT_RM_SCRIPT" "$@" ;;
     *)
       cat >&2 <<'EOF'
 Usage: devhub wt <command> [args]
 
 Commands:
-  add <project> <branch> [base-ref] [--json]   Create/register a worktree (exit 3 if already registered)
-  list <project> [--json]                      List registered worktrees
+  add <project> <branch> [base-ref] [--group <slug>] [--owns <glob[,glob]>] [--json]
+                                               Create/register a worktree (exit 3 if already registered)
+  list <project> [--group <slug>] [--json]     List registered worktrees
   status <project> [slug] [--json]             Show http/db/runtime state per worktree
+  conflicts <project> [--group <slug>] [--against <ref>] [--json]
+                                               Report where lanes changed the same files (exit 6 if conflicts)
   rm <project> <slug> [--json] [--force]        Remove a worktree (exit 5 if dirty)
 EOF
       exit 1
@@ -343,9 +348,10 @@ Commands:
   project adopt <path>                One-shot adoption of an existing Git checkout
   project list                        List registered projects
   project show <name>                 Show a project registry file
-  wt add <project> <branch> [base]    Create/register a project worktree
-  wt list <project>                   List project worktrees
+  wt add <project> <branch> [base]    Create/register a project worktree (--group, --owns)
+  wt list <project> [--group <slug>]  List project worktrees
   wt status <project> [slug]          Show worktree http/db/runtime status
+  wt conflicts <project> [--group]    Report lanes that changed the same files (exit 6 if conflicts)
   wt rm <project> <slug> [--force]    Remove a project worktree
   doctor                              Show health and networking diagnostics
   runtime <project>                   Start project runtime (auto-detected from overrides/)
@@ -363,8 +369,9 @@ Projects:
   Add local override files as overrides/<name>-app.override.yml.
 
 Machine output:
-  wt add/list/status/rm and project list accept --json (stable schema, "v":1).
-  Exit codes: wt add 3 = already registered, 4 = no free port; wt rm 5 = dirty worktree.
+  wt add/list/status/conflicts/rm and project list accept --json (stable schema, "v":1).
+  Exit codes: wt add 3 = already registered, 4 = no free port; wt rm 5 = dirty worktree;
+  wt conflicts 6 = conflicts detected.
 EOF
 }
 
